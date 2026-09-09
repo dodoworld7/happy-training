@@ -510,6 +510,7 @@ export default function AdminPage() {
               <h1 className="admin-title">{displayTitle}</h1>
               <span className="badge badge-warning">관리자</span>
             </div>
+            <div className="header-author-tag">made by 김도현</div>
             <p className="text-xs text-muted">Room ID: {roomId}</p>
           </div>
         </div>
@@ -1085,7 +1086,6 @@ export default function AdminPage() {
           </div>
         )}
       </div>
-      <footer className="brand-footer">made by 김도현</footer>
     </div>
   );
 }
