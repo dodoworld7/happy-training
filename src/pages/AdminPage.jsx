@@ -347,6 +347,66 @@ export default function AdminPage() {
     }
   };
 
+  // 전체 참가자 이력 지우기
+  const handleClearAllParticipants = async () => {
+    if (!window.confirm('🚨 모든 참가자 접속 이력을 초기화하시겠습니까?')) return;
+    try {
+      const deletePromises = participants.map(p => deleteDoc(doc(db, 'rooms', roomId, 'participants', p.id)));
+      await Promise.all(deletePromises);
+      alert('🧹 참가자 목록이 초기화되었습니다.');
+    } catch (err) {
+      alert('초기화 오류: ' + err.message);
+    }
+  };
+
+  // 전체 투표 지우기
+  const handleClearAllPolls = async () => {
+    if (!window.confirm('🚨 모든 투표 이력을 삭제하시겠습니까?')) return;
+    try {
+      const deletePromises = polls.map(p => deleteDoc(doc(db, 'rooms', roomId, 'polls', p.id)));
+      await Promise.all(deletePromises);
+      alert('🧹 모든 투표 이력이 삭제되었습니다.');
+    } catch (err) {
+      alert('삭제 오류: ' + err.message);
+    }
+  };
+
+  // 전체 워드클라우드 지우기
+  const handleClearAllWordClouds = async () => {
+    if (!window.confirm('🚨 모든 워드 클라우드 이력을 삭제하시겠습니까?')) return;
+    try {
+      const deletePromises = wordclouds.map(w => deleteDoc(doc(db, 'rooms', roomId, 'wordclouds', w.id)));
+      await Promise.all(deletePromises);
+      alert('🧹 모든 워드 클라우드가 삭제되었습니다.');
+    } catch (err) {
+      alert('삭제 오류: ' + err.message);
+    }
+  };
+
+  // 전체 링크 지우기
+  const handleClearAllLinks = async () => {
+    if (!window.confirm('🚨 모든 전송 링크 목록을 삭제하시겠습니까?')) return;
+    try {
+      const deletePromises = links.map(l => deleteDoc(doc(db, 'rooms', roomId, 'links', l.id)));
+      await Promise.all(deletePromises);
+      alert('🧹 모든 링크가 삭제되었습니다.');
+    } catch (err) {
+      alert('삭제 오류: ' + err.message);
+    }
+  };
+
+  // 전체 질문 지우기
+  const handleClearAllQuestions = async () => {
+    if (!window.confirm('🚨 모든 익명 질문을 삭제하시겠습니까?')) return;
+    try {
+      const deletePromises = questions.map(q => deleteDoc(doc(db, 'rooms', roomId, 'questions', q.id)));
+      await Promise.all(deletePromises);
+      alert('🧹 모든 질문이 삭제되었습니다.');
+    } catch (err) {
+      alert('삭제 오류: ' + err.message);
+    }
+  };
+
   // 메시지 삭제
   const handleDeleteMsg = async (msgId) => {
     if (!window.confirm('이 메시지를 삭제할까요?')) return;
@@ -438,13 +498,13 @@ export default function AdminPage() {
       {/* 탭 네비게이션 */}
       <nav className="admin-tabs">
         {[
-          { id: 'attendance', label: '📋 참가자 현황', count: participants.length },
-          { id: 'poll', label: '📊 실시간 투표', count: polls.filter(p => p.isActive).length ? 'ON' : null },
-          { id: 'wordcloud', label: '☁️ 워드 클라우드', count: wordclouds.filter(w => w.isActive).length ? 'ON' : null },
-          { id: 'question', label: '🙋‍♂️ 익명 질문 관리', count: questions.filter(q => !q.isAnswered).length },
-          { id: 'link', label: '🔗 링크 전송', count: links.length },
+          { id: 'attendance', label: '📋 참가자 현황', count: onlineCount },
           { id: 'pin', label: '📌 공지 관리', count: null },
           { id: 'chat', label: '💬 채팅 관리', count: messages.length },
+          { id: 'poll', label: '📊 실시간 투표', count: polls.filter(p => p.isActive).length ? 'ON' : null },
+          { id: 'wordcloud', label: '☁️ 워드 클라우드', count: wordclouds.filter(w => w.isActive).length ? 'ON' : null },
+          { id: 'link', label: '🔗 링크 전송', count: links.length },
+          { id: 'question', label: '🙋‍♂️ 익명 질문 관리', count: questions.filter(q => !q.isAnswered).length },
         ].map(tab => (
           <button
             key={tab.id}
@@ -469,11 +529,18 @@ export default function AdminPage() {
 
           return (
             <div className="admin-section animate-fade-in">
-              <div className="admin-section-header">
+              <div className="admin-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 className="admin-section-title">참가자 현황 ({activeParticipants.length}명)</h2>
-                <button className="btn btn-ghost btn-sm" onClick={handleCsvDownload}>
-                  📥 CSV 다운로드
-                </button>
+                <div className="flex gap-2">
+                  <button className="btn btn-ghost btn-sm" onClick={handleCsvDownload}>
+                    📥 CSV 다운로드
+                  </button>
+                  {participants.length > 0 && (
+                    <button className="btn btn-danger btn-sm" onClick={handleClearAllParticipants}>
+                      🧹 참가자 전체 초기화
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="attendance-grid">
                 {activeParticipants.map((p, idx) => (
@@ -574,7 +641,12 @@ export default function AdminPage() {
             {/* 투표 목록 및 현황 */}
             {polls.length > 0 && (
               <div style={{ marginTop: 'var(--space-6)' }}>
-                <h3 className="section-title" style={{ marginBottom: 'var(--space-4)' }}>투표 이력 및 현황</h3>
+                <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-4)' }}>
+                  <h3 className="section-title">투표 이력 및 현황</h3>
+                  <button className="btn btn-danger btn-sm" onClick={handleClearAllPolls}>
+                    🧹 전체 투표 이력 모두 지우기
+                  </button>
+                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                   {polls.map(p => {
                     const votes = p.votes || {};
@@ -661,7 +733,12 @@ export default function AdminPage() {
             {/* 워드 클라우드 이력 및 실시간 현황 */}
             {wordclouds.length > 0 && (
               <div style={{ marginTop: 'var(--space-6)' }}>
-                <h3 className="section-title" style={{ marginBottom: 'var(--space-4)' }}>워드 클라우드 이력 및 현황</h3>
+                <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-4)' }}>
+                  <h3 className="section-title">워드 클라우드 이력 및 현황</h3>
+                  <button className="btn btn-danger btn-sm" onClick={handleClearAllWordClouds}>
+                    🧹 전체 워드 클라우드 모두 지우기
+                  </button>
+                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                   {wordclouds.map(w => {
                     const responses = w.responses || {};
@@ -734,8 +811,13 @@ export default function AdminPage() {
         {/* 익명 질문 관리 탭 */}
         {activeTab === 'question' && (
           <div className="admin-section animate-fade-in">
-            <div className="admin-section-header">
+            <div className="admin-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 className="admin-section-title">익명 질문 관리 ({questions.length}개)</h2>
+              {questions.length > 0 && (
+                <button className="btn btn-danger btn-sm" onClick={handleClearAllQuestions}>
+                  🧹 전체 질문 모두 지우기
+                </button>
+              )}
             </div>
             <div className="admin-chat-list">
               {questions.map((q) => (
@@ -820,7 +902,12 @@ export default function AdminPage() {
             {/* 전송 이력 */}
             {links.length > 0 && (
               <div style={{marginTop:'var(--space-6)'}}>
-                <h3 className="section-title" style={{marginBottom:'var(--space-4)'}}>전송 이력</h3>
+                <div className="flex justify-between items-center" style={{marginBottom:'var(--space-4)'}}>
+                  <h3 className="section-title">전송 이력</h3>
+                  <button className="btn btn-danger btn-sm" onClick={handleClearAllLinks}>
+                    🧹 전체 전송 링크 모두 지우기
+                  </button>
+                </div>
                 <div className="link-history">
                   {links.map(link => (
                     <div key={link.id} className="link-history-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
