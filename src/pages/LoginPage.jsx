@@ -207,7 +207,6 @@ export default function LoginPage() {
           연수 코드를 모르신다면 운영자에게 문의하세요.
         </p>
       </div>
-      <footer className="brand-footer">made by 남부교육지원청</footer>
     </div>
   );
 }

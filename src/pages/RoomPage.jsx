@@ -284,7 +284,6 @@ export default function RoomPage() {
           />
         )}
       </div>
-      <footer className="brand-footer">made by 남부교육지원청</footer>
     </div>
   );
 }
