@@ -497,6 +497,8 @@ export default function AdminPage() {
   const checkIsOnline = (p) => p.isOnline !== false && !p.isKicked;
   const onlineCount = participants.filter(p => checkIsOnline(p)).length;
 
+  const displayTitle = (!roomInfo.title || roomInfo.title === '해피연수') ? '링크데이(토크콘서트) 관리 대시보드' : roomInfo.title.replace(/해피연수/g, '링크데이(토크콘서트)');
+
   return (
     <div className="admin-layout">
       {/* 헤더 */}
@@ -505,7 +507,7 @@ export default function AdminPage() {
           <div className="room-logo">🎓</div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="admin-title">{roomInfo.title || '링크데이(토크콘서트) 관리 대시보드'}</h1>
+              <h1 className="admin-title">{displayTitle}</h1>
               <span className="badge badge-warning">관리자</span>
             </div>
             <p className="text-xs text-muted">Room ID: {roomId}</p>
@@ -1083,6 +1085,7 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+      <footer className="brand-footer">made by 김도현</footer>
     </div>
   );
 }

@@ -178,6 +178,8 @@ export default function RoomPage() {
     );
   }
 
+  const displayTitle = (!roomInfo.title || roomInfo.title === '해피연수') ? '링크데이(토크콘서트)' : roomInfo.title.replace(/해피연수/g, '링크데이(토크콘서트)');
+
   return (
     <div className="room-layout">
       {/* 링크 팝업 */}
@@ -190,7 +192,7 @@ export default function RoomPage() {
         <div className="room-header__left">
           <div className="room-logo">🎓</div>
           <div>
-            <h1 className="room-title">{roomInfo.title || '링크데이(토크콘서트)'}</h1>
+            <h1 className="room-title">{displayTitle}</h1>
             <p className="room-subtitle text-xs text-muted">
               <span className="online-dot" /> {participants.length}명 참가 중
             </p>
@@ -284,6 +286,7 @@ export default function RoomPage() {
           />
         )}
       </div>
+      <footer className="brand-footer">made by 김도현</footer>
     </div>
   );
 }
