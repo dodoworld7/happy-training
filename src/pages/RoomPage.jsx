@@ -193,7 +193,7 @@ export default function RoomPage() {
           <div className="room-logo">🎓</div>
           <div>
             <h1 className="room-title">{displayTitle}</h1>
-            <div className="header-author-tag">made by 김도현</div>
+            <div className="header-author-tag">made by 남부교육지원청</div>
             <p className="room-subtitle text-xs text-muted">
               <span className="online-dot" /> {participants.length}명 참가 중
             </p>
@@ -287,6 +287,11 @@ export default function RoomPage() {
           />
         )}
       </div>
+
+      {/* 푸터 서명 */}
+      <footer className="room-footer" style={{ textAlign: 'center', padding: '1rem 0 1.5rem 0', color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.85rem', fontWeight: '500' }}>
+        made by 남부교육지원청
+      </footer>
     </div>
   );
 }

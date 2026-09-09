@@ -117,7 +117,7 @@ export default function LoginPage() {
             <span className="login-logo__icon">🎓</span>
           </div>
           <h1 className="login-title">링크데이(토크콘서트)</h1>
-          <p className="login-subtitle">연수 참가 입장 코드를 입력해 주세요</p>
+          <p className="login-subtitle">입장 코드를 입력해 주세요</p>
         </div>
 
         {/* 진행 단계 표시 */}
@@ -206,6 +206,9 @@ export default function LoginPage() {
         <p className="login-footer-text">
           연수 코드를 모르신다면 운영자에게 문의하세요.
         </p>
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', fontWeight: '500', letterSpacing: '0.5px' }}>
+          made by 남부교육지원청
+        </div>
       </div>
     </div>
   );
