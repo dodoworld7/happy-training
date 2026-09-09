@@ -1,0 +1,95 @@
+/* ParticipantList.css — 라이트 모드 */
+.participant-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+}
+
+.participant-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  background: #fafbff;
+}
+
+.participant-items {
+  flex: 1;
+  padding: var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.participant-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+  position: relative;
+}
+.participant-item:hover {
+  background: #f5f3ff;
+}
+.participant-item--me {
+  background: #f5f3ff;
+  border: 1px solid rgba(124,58,237,0.15);
+}
+
+.participant-info {
+  flex: 1;
+  min-width: 0;
+}
+.participant-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.participant-me-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  background: #ede9fe;
+  color: var(--color-primary);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: var(--radius-full);
+  font-weight: 700;
+}
+.participant-org {
+  font-size: 11px;
+  color: var(--color-text-subtle);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.participant-time {
+  font-size: 10px;
+  color: var(--color-text-subtle);
+  margin-top: 2px;
+}
+
+.participant-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.participant-empty {
+  text-align: center;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-sm);
+  padding: var(--space-8);
+}
