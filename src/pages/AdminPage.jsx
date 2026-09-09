@@ -407,6 +407,33 @@ export default function AdminPage() {
     }
   };
 
+  // 연수 전체 데이터 일괄 초기화 (모든 데이터 원클릭 전면 삭제)
+  const handleClearEntireRoomData = async () => {
+    const confirmMsg = `🚨 [경고] 해당 연수 방의 모든 기록을 완벽하게 초기화하시겠습니까?\n\n- 참가자 접속 이력 (${participants.length}명)\n- 채팅 메시지 (${messages.length}개)\n- 실시간 투표 (${polls.length}개)\n- 워드 클라우드 (${wordclouds.length}개)\n- 공유 링크 (${links.length}개)\n- 익명 질문 (${questions.length}개)\n- 고정 공지\n\n이 작업은 수행 후 절대로 복구할 수 없습니다.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      // 1. 모든 서브 컬렉션 문서 일괄 삭제
+      const pDeletes = participants.map(p => deleteDoc(doc(db, 'rooms', roomId, 'participants', p.id)));
+      const mDeletes = messages.map(m => deleteDoc(doc(db, 'rooms', roomId, 'messages', m.id)));
+      const polDeletes = polls.map(po => deleteDoc(doc(db, 'rooms', roomId, 'polls', po.id)));
+      const wcDeletes = wordclouds.map(w => deleteDoc(doc(db, 'rooms', roomId, 'wordclouds', w.id)));
+      const lDeletes = links.map(l => deleteDoc(doc(db, 'rooms', roomId, 'links', l.id)));
+      const qDeletes = questions.map(q => deleteDoc(doc(db, 'rooms', roomId, 'questions', q.id)));
+
+      await Promise.all([
+        ...pDeletes, ...mDeletes, ...polDeletes, ...wcDeletes, ...lDeletes, ...qDeletes
+      ]);
+
+      // 2. 공지 고정 해제
+      await updateDoc(doc(db, 'rooms', roomId), { pinnedMessage: '' });
+
+      alert('🧹 해당 연수의 모든 기록이 완벽하게 초기화되었습니다!');
+    } catch (err) {
+      alert('전체 초기화 오류: ' + err.message);
+    }
+  };
+
   // 메시지 삭제
   const handleDeleteMsg = async (msgId) => {
     if (!window.confirm('이 메시지를 삭제할까요?')) return;
@@ -474,7 +501,7 @@ export default function AdminPage() {
             <p className="text-xs text-muted">Room ID: {roomId}</p>
           </div>
         </div>
-        <div className="admin-header__right">
+        <div className="admin-header__right flex items-center gap-3">
           <div className="admin-stat">
             <span className="admin-stat__num">{onlineCount}</span>
             <span className="admin-stat__label">현재 접속</span>
@@ -483,6 +510,14 @@ export default function AdminPage() {
             <span className="admin-stat__num">{participants.length}</span>
             <span className="admin-stat__label">총 입장</span>
           </div>
+          <button
+            className="btn btn-danger btn-sm"
+            style={{ fontWeight: 800, padding: '8px 14px', borderRadius: '8px' }}
+            onClick={handleClearEntireRoomData}
+            title="이 연수의 모든 데이터(참가자, 채팅, 투표, 질문, 워드클라우드, 링크, 공지)를 초기화합니다"
+          >
+            🚨 연수 전체 초기화
+          </button>
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => {

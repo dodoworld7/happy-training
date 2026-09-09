@@ -39,12 +39,12 @@
   gap: var(--space-3);
 }
 .room-logo {
-  font-size: 24px;
+  font-size: 32px;
 }
 .room-title {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  background: linear-gradient(135deg, #5b21b6 0%, #4338ca 100%);
+  font-size: 1.6rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #4c1d95 0%, #3730a3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
