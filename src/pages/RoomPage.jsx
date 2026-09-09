@@ -102,39 +102,34 @@ export default function RoomPage() {
     return unsub;
   }, [roomId]);
 
-  // 30초 주기 하트비트 전송 (자동 오프라인 감지용)
+  // 온라인 상태 관리 (입장 시 온라인, 탭/창 종료 시 오프라인)
   useEffect(() => {
     const stored = sessionStorage.getItem('happyUser');
     if (!stored || !roomId) return;
     const { sessionId } = JSON.parse(stored);
     const participantRef = doc(db, 'rooms', roomId, 'participants', sessionId);
 
-    // 최초 입장 시 및 30초마다 생존 신호(lastSeen) 전송
-    const sendHeartbeat = async () => {
-      try {
-        await updateDoc(participantRef, {
-          isOnline: true,
-          lastSeen: serverTimestamp(),
-        });
-      } catch (err) {
-        console.error('하트비트 전송 실패:', err);
-      }
-    };
-
-    sendHeartbeat();
-    const intervalId = setInterval(sendHeartbeat, 30000); // 30초 주기
+    // 입장 시 온라인 마킹
+    updateDoc(participantRef, { isOnline: true }).catch(console.error);
 
     const handleUnload = () => {
-      // 브라우저 닫을 때 즉시 오프라인 전송
+      // 탭/창 종료 시 오프라인 마킹
       try {
-        updateDoc(participantRef, { isOnline: false });
+        if (navigator.sendBeacon) {
+          updateDoc(participantRef, { isOnline: false });
+        } else {
+          updateDoc(participantRef, { isOnline: false });
+        }
       } catch (e) {}
     };
+
     window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
 
     return () => {
-      clearInterval(intervalId);
       window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+      updateDoc(participantRef, { isOnline: false }).catch(() => {});
     };
   }, [roomId]);
 

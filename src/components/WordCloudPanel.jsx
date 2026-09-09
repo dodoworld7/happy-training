@@ -152,21 +152,22 @@ export default function WordCloudPanel({ roomId, user }) {
         ) : (
           <div className="wordcloud-cloud-container">
             {wordList.map((item, idx) => {
-              // 빈도수에 따른 폰트 크기 계산 (1.1rem ~ 3.2rem)
+              // 빈도수에 따른 폰트 크기 극적 확대 (1.4rem ~ 4.8rem)
               const ratio = item.count / maxCount;
-              const fontSize = `${(1.1 + ratio * 2.1).toFixed(2)}rem`;
+              const fontSize = `${(1.4 + ratio * 3.4).toFixed(2)}rem`;
               const palette = COLOR_PALETTES[idx % COLOR_PALETTES.length];
               const isMyWord = myResponse?.word === item.text;
+              const isTop1 = idx === 0 && item.count > 1;
 
               return (
                 <div
                   key={idx}
-                  className="wordcloud-tag animate-pop"
+                  className={`wordcloud-tag animate-pop ${isTop1 ? 'wordcloud-tag--top1' : ''}`}
                   style={{
                     fontSize,
                     background: palette.bg,
                     color: palette.color,
-                    boxShadow: isMyWord ? '0 0 0 3px #10b981, 0 8px 20px rgba(16, 185, 129, 0.4)' : undefined,
+                    boxShadow: isMyWord ? '0 0 0 4px #10b981, 0 10px 24px rgba(16, 185, 129, 0.5)' : undefined,
                   }}
                 >
                   <span>{item.text}</span>

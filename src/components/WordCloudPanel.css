@@ -6,7 +6,7 @@
   gap: var(--space-5);
   height: 100%;
   padding: var(--space-4);
-  max-width: 900px;
+  max-width: 950px;
   margin: 0 auto;
   width: 100%;
 }
@@ -28,15 +28,16 @@
   gap: 6px;
   background: var(--gradient-primary);
   color: #ffffff;
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 800;
   width: fit-content;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .wordcloud-question-title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   font-weight: 800;
   color: var(--color-text-main);
   margin-top: 4px;
@@ -50,18 +51,18 @@
 }
 
 .wordcloud-canvas-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 244, 255, 0.9));
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(99, 102, 241, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(238, 242, 255, 0.95));
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(99, 102, 241, 0.2);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
-  min-height: 380px;
+  min-height: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.12);
   overflow: hidden;
 }
 
@@ -71,8 +72,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-4);
-  padding-bottom: var(--space-2);
-  border-bottom: 1px dashed var(--color-border);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px dashed rgba(99, 102, 241, 0.15);
 }
 
 .wordcloud-cloud-container {
@@ -80,39 +81,59 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 12px 18px;
+  gap: 16px 22px;
   width: 100%;
-  padding: var(--space-4);
-  perspective: 1000px;
+  padding: var(--space-6);
 }
 
 .wordcloud-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-full);
-  font-weight: 800;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 40px;
+  font-weight: 900;
   line-height: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  letter-spacing: -0.5px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: default;
   user-select: none;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  position: relative;
+}
+
+/* 1위 대형 단어 펄스 애니메이션 */
+.wordcloud-tag--top1 {
+  animation: pulse-glow 2.5s infinite ease-in-out;
+  z-index: 5;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 15px 40px rgba(236, 72, 153, 0.7);
+  }
 }
 
 .wordcloud-tag:hover {
-  transform: scale(1.15) translateY(-4px);
-  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25);
-  z-index: 10;
+  transform: scale(1.22) translateY(-6px) rotate(-1deg);
+  box-shadow: 0 16px 36px rgba(99, 102, 241, 0.35);
+  z-index: 20;
 }
 
 .wordcloud-tag__count {
-  font-size: 0.65em;
-  opacity: 0.85;
-  background: rgba(255, 255, 255, 0.3);
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
+  font-size: 0.6em;
+  opacity: 0.95;
+  background: rgba(255, 255, 255, 0.35);
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 800;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .wordcloud-empty {
@@ -126,7 +147,7 @@
 }
 
 .wordcloud-empty__icon {
-  font-size: 3.5rem;
+  font-size: 4rem;
   animation: float 3s ease-in-out infinite;
 }
 

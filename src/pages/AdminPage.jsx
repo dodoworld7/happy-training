@@ -324,6 +324,29 @@ export default function AdminPage() {
     setPinText('');
   };
 
+  // 링크 삭제
+  const handleDeleteLink = async (linkId) => {
+    if (!window.confirm('이 공유 링크를 삭제하시겠습니까?')) return;
+    try {
+      await deleteDoc(doc(db, 'rooms', roomId, 'links', linkId));
+      alert('🗑 링크가 삭제되었습니다.');
+    } catch (err) {
+      alert('삭제 오류: ' + err.message);
+    }
+  };
+
+  // 전체 채팅 모두 지우기
+  const handleClearAllMessages = async () => {
+    if (!window.confirm('🚨 정말 모든 채팅 메시지를 지우시겠습니까?\n이 작업은 복구할 수 없습니다.')) return;
+    try {
+      const deletePromises = messages.map(m => deleteDoc(doc(db, 'rooms', roomId, 'messages', m.id)));
+      await Promise.all(deletePromises);
+      alert('🧹 모든 채팅 메시지가 깨끗하게 지워졌습니다.');
+    } catch (err) {
+      alert('전체 지우기 오류: ' + err.message);
+    }
+  };
+
   // 메시지 삭제
   const handleDeleteMsg = async (msgId) => {
     if (!window.confirm('이 메시지를 삭제할까요?')) return;
@@ -373,14 +396,8 @@ export default function AdminPage() {
     );
   }
 
-  // 하트비트 기반 온라인 실시간 판정 (30초 주기 신호, 60초 미수신 시 자동 오프라인)
-  const checkIsOnline = (p) => {
-    if (p.isOnline === false || p.isKicked) return false;
-    if (!p.lastSeen) return true;
-    const lastSeenTime = p.lastSeen?.toDate ? p.lastSeen.toDate().getTime() : (new Date(p.lastSeen).getTime() || Date.now());
-    return (Date.now() - lastSeenTime) < 60000;
-  };
-
+  // 현재 접속 인원 및 유저 판단 (isOnline !== false && !isKicked)
+  const checkIsOnline = (p) => p.isOnline !== false && !p.isKicked;
   const onlineCount = participants.filter(p => checkIsOnline(p)).length;
 
   return (
@@ -806,17 +823,28 @@ export default function AdminPage() {
                 <h3 className="section-title" style={{marginBottom:'var(--space-4)'}}>전송 이력</h3>
                 <div className="link-history">
                   {links.map(link => (
-                    <div key={link.id} className="link-history-item">
-                      <span className="link-history-item__icon">🔗</span>
-                      <div className="link-history-item__body">
-                        <div className="link-history-item__title">{link.title || link.url}</div>
-                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="link-history-item__url">
-                          {link.url}
-                        </a>
+                    <div key={link.id} className="link-history-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flex: 1, minWidth: 0 }}>
+                        <span className="link-history-item__icon">🔗</span>
+                        <div className="link-history-item__body" style={{ minWidth: 0, flex: 1 }}>
+                          <div className="link-history-item__title">{link.title || link.url}</div>
+                          <a href={link.url} target="_blank" rel="noopener noreferrer" className="link-history-item__url">
+                            {link.url}
+                          </a>
+                        </div>
                       </div>
-                      <span className="link-history-item__time text-xs text-muted">
-                        {formatTime(link.sentAt)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="link-history-item__time text-xs text-muted">
+                          {formatTime(link.sentAt)}
+                        </span>
+                        <button
+                          className="btn btn-danger btn-sm btn-icon"
+                          onClick={() => handleDeleteLink(link.id)}
+                          title="링크 삭제"
+                        >
+                          🗑
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -881,9 +909,20 @@ export default function AdminPage() {
         {/* 채팅 관리 탭 */}
         {activeTab === 'chat' && (
           <div className="admin-section animate-fade-in">
-            <div className="admin-section-header">
-              <h2 className="admin-section-title">채팅 관리</h2>
-              <span className="text-xs text-muted">{messages.length}개 메시지</span>
+            <div className="admin-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 className="admin-section-title">채팅 관리</h2>
+                <span className="text-xs text-muted">{messages.length}개 메시지</span>
+              </div>
+              {messages.length > 0 && (
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={handleClearAllMessages}
+                  style={{ fontWeight: 700 }}
+                >
+                  🧹 전체 채팅 모두 지우기
+                </button>
+              )}
             </div>
             <div className="admin-chat-list">
               {messages.slice().reverse().map((msg) => (
