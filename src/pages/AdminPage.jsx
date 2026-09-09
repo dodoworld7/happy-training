@@ -349,11 +349,15 @@ export default function AdminPage() {
 
   // 전체 참가자 이력 지우기
   const handleClearAllParticipants = async () => {
-    if (!window.confirm('🚨 모든 참가자 접속 이력을 초기화하시겠습니까?')) return;
+    if (!window.confirm('🚨 모든 참가자 접속 이력을 초기화하고 참가자들을 퇴장시키겠습니까?')) return;
     try {
+      // 모든 참가자에게 퇴장 신호 전달 후 삭제
+      const kickPromises = participants.map(p => updateDoc(doc(db, 'rooms', roomId, 'participants', p.id), { isKicked: true, isOnline: false }));
+      await Promise.all(kickPromises);
+
       const deletePromises = participants.map(p => deleteDoc(doc(db, 'rooms', roomId, 'participants', p.id)));
       await Promise.all(deletePromises);
-      alert('🧹 참가자 목록이 초기화되었습니다.');
+      alert('🧹 참가자 목록이 초기화되었으며 접속 중인 참가자가 퇴장 처리되었습니다.');
     } catch (err) {
       alert('초기화 오류: ' + err.message);
     }
@@ -409,11 +413,17 @@ export default function AdminPage() {
 
   // 연수 전체 데이터 일괄 초기화 (모든 데이터 원클릭 전면 삭제)
   const handleClearEntireRoomData = async () => {
-    const confirmMsg = `🚨 [경고] 해당 연수 방의 모든 기록을 완벽하게 초기화하시겠습니까?\n\n- 참가자 접속 이력 (${participants.length}명)\n- 채팅 메시지 (${messages.length}개)\n- 실시간 투표 (${polls.length}개)\n- 워드 클라우드 (${wordclouds.length}개)\n- 공유 링크 (${links.length}개)\n- 익명 질문 (${questions.length}개)\n- 고정 공지\n\n이 작업은 수행 후 절대로 복구할 수 없습니다.`;
+    const confirmMsg = `🚨 [경고] 해당 연수 방의 모든 기록을 완벽하게 초기화하고 접속 참가자를 퇴장시키겠습니까?\n\n- 참가자 접속 이력 (${participants.length}명)\n- 채팅 메시지 (${messages.length}개)\n- 실시간 투표 (${polls.length}개)\n- 워드 클라우드 (${wordclouds.length}개)\n- 공유 링크 (${links.length}개)\n- 익명 질문 (${questions.length}개)\n- 고정 공지\n\n이 작업은 수행 후 절대로 복구할 수 없습니다.`;
     if (!window.confirm(confirmMsg)) return;
 
     try {
-      // 1. 모든 서브 컬렉션 문서 일괄 삭제
+      // 1. 모든 접속 참가자에게 퇴장 처리 신호 전송
+      const kickPromises = participants.map(p => 
+        updateDoc(doc(db, 'rooms', roomId, 'participants', p.id), { isKicked: true, isOnline: false })
+      );
+      await Promise.all(kickPromises);
+
+      // 2. 모든 서브 컬렉션 문서 일괄 삭제
       const pDeletes = participants.map(p => deleteDoc(doc(db, 'rooms', roomId, 'participants', p.id)));
       const mDeletes = messages.map(m => deleteDoc(doc(db, 'rooms', roomId, 'messages', m.id)));
       const polDeletes = polls.map(po => deleteDoc(doc(db, 'rooms', roomId, 'polls', po.id)));
@@ -425,10 +435,10 @@ export default function AdminPage() {
         ...pDeletes, ...mDeletes, ...polDeletes, ...wcDeletes, ...lDeletes, ...qDeletes
       ]);
 
-      // 2. 공지 고정 해제
+      // 3. 공지 고정 해제
       await updateDoc(doc(db, 'rooms', roomId), { pinnedMessage: '' });
 
-      alert('🧹 해당 연수의 모든 기록이 완벽하게 초기화되었습니다!');
+      alert('🧹 해당 연수의 모든 기록이 초기화되었으며, 접속 중인 참가자가 모두 퇴장 처리되었습니다!');
     } catch (err) {
       alert('전체 초기화 오류: ' + err.message);
     }

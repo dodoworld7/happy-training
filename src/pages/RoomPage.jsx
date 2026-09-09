@@ -138,13 +138,17 @@ export default function RoomPage() {
     if (!roomId || !user?.sessionId) return;
     const myParticipantRef = doc(db, 'rooms', roomId, 'participants', user.sessionId);
     const unsub = onSnapshot(myParticipantRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.isKicked) {
-          alert('ℹ️ 운영자에 의해 퇴장 처리되었습니다.');
-          sessionStorage.clear();
-          navigate('/');
-        }
+      if (!snap.exists()) {
+        alert('ℹ️ 연수가 초기화되었거나 퇴장 처리되어 화면이 종료됩니다.');
+        sessionStorage.clear();
+        navigate('/');
+        return;
+      }
+      const data = snap.data();
+      if (data.isKicked) {
+        alert('ℹ️ 운영자에 의해 퇴장 처리되었습니다.');
+        sessionStorage.clear();
+        navigate('/');
       }
     });
     return unsub;
