@@ -186,7 +186,7 @@ export default function RoomPage() {
         <div className="room-header__left">
           <div className="room-logo">🎓</div>
           <div>
-            <h1 className="room-title">{roomInfo.title || '연수 진행 중'}</h1>
+            <h1 className="room-title">{roomInfo.title || '링크데이(토크콘서트)'}</h1>
             <p className="room-subtitle text-xs text-muted">
               <span className="online-dot" /> {participants.length}명 참가 중
             </p>
@@ -280,6 +280,7 @@ export default function RoomPage() {
           />
         )}
       </div>
+      <footer className="brand-footer">made by 남부교육지원청</footer>
     </div>
   );
 }

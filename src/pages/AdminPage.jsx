@@ -495,7 +495,7 @@ export default function AdminPage() {
           <div className="room-logo">🎓</div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="admin-title">{roomInfo.title || '연수 운영 대시보드'}</h1>
+              <h1 className="admin-title">{roomInfo.title || '링크데이(토크콘서트) 관리 대시보드'}</h1>
               <span className="badge badge-warning">관리자</span>
             </div>
             <p className="text-xs text-muted">Room ID: {roomId}</p>
@@ -1073,6 +1073,7 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+      <footer className="brand-footer">made by 남부교육지원청</footer>
     </div>
   );
 }

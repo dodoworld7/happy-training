@@ -162,12 +162,11 @@ export default function WordCloudPanel({ roomId, user }) {
               return (
                 <div
                   key={idx}
-                  className={`wordcloud-tag animate-pop ${isTop1 ? 'wordcloud-tag--top1' : ''}`}
+                  className={`wordcloud-tag animate-pop ${isTop1 ? 'wordcloud-tag--top1' : ''} ${isMyWord ? 'wordcloud-tag--my-word' : ''}`}
                   style={{
                     fontSize,
                     background: palette.bg,
                     color: palette.color,
-                    boxShadow: isMyWord ? '0 0 0 4px #10b981, 0 10px 24px rgba(16, 185, 129, 0.5)' : undefined,
                   }}
                 >
                   <span>{item.text}</span>

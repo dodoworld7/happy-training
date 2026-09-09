@@ -116,7 +116,7 @@ export default function LoginPage() {
           <div className="login-logo">
             <span className="login-logo__icon">🎓</span>
           </div>
-          <h1 className="login-title">해피연수</h1>
+          <h1 className="login-title">링크데이(토크콘서트)</h1>
           <p className="login-subtitle">연수 참가 입장 코드를 입력해 주세요</p>
         </div>
 
@@ -207,6 +207,7 @@ export default function LoginPage() {
           연수 코드를 모르신다면 운영자에게 문의하세요.
         </p>
       </div>
+      <footer className="brand-footer">made by 남부교육지원청</footer>
     </div>
   );
 }
