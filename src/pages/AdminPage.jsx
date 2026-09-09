@@ -54,6 +54,10 @@ export default function AdminPage() {
   const [pinText, setPinText] = useState('');
   const [savingPin, setSavingPin] = useState(false);
 
+  // 관리자 채팅 폼 상태
+  const [adminChatText, setAdminChatText] = useState('');
+  const [sendingAdminChat, setSendingAdminChat] = useState(false);
+
   // 세션 확인
   useEffect(() => {
     const stored = sessionStorage.getItem('happyUser');
@@ -442,6 +446,30 @@ export default function AdminPage() {
     } catch (err) {
       alert('전체 초기화 오류: ' + err.message);
     }
+  };
+
+  // 관리자 실시간 채팅 전송
+  const handleSendAdminChat = async (e) => {
+    e.preventDefault();
+    const trimmed = adminChatText.trim();
+    if (!trimmed || sendingAdminChat) return;
+
+    setSendingAdminChat(true);
+    try {
+      await addDoc(collection(db, 'rooms', roomId, 'messages'), {
+        name: user?.name || '운영자',
+        org: '관리자',
+        text: trimmed,
+        timestamp: serverTimestamp(),
+        pinned: false,
+        reactions: {},
+        isAdmin: true,
+      });
+      setAdminChatText('');
+    } catch (err) {
+      alert('채팅 전송 오류: ' + err.message);
+    }
+    setSendingAdminChat(false);
   };
 
   // 메시지 삭제
@@ -1041,13 +1069,13 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 채팅 관리 탭 */}
+        {/* 채팅 참가 및 관리 탭 */}
         {activeTab === 'chat' && (
           <div className="admin-section animate-fade-in">
             <div className="admin-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 className="admin-section-title">채팅 관리</h2>
-                <span className="text-xs text-muted">{messages.length}개 메시지</span>
+                <h2 className="admin-section-title">💬 실시간 채팅 참가 및 관리</h2>
+                <span className="text-xs text-muted">총 {messages.length}개 메시지</span>
               </div>
               {messages.length > 0 && (
                 <button
@@ -1059,13 +1087,38 @@ export default function AdminPage() {
                 </button>
               )}
             </div>
+
+            {/* 관리자 메시지 전송 카테고리 */}
+            <div className="admin-card" style={{ marginBottom: 'var(--space-5)' }}>
+              <h3 className="section-title" style={{ marginBottom: 'var(--space-2)' }}>💬 운영자 메시지 보내기 (채팅 참가)</h3>
+              <form onSubmit={handleSendAdminChat} style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <input
+                  className="input"
+                  placeholder="참가자들에게 전달할 메시지를 입력하세요... (Enter 전송)"
+                  value={adminChatText}
+                  onChange={e => setAdminChatText(e.target.value)}
+                />
+                <button
+                  className="btn btn-primary"
+                  type="submit"
+                  disabled={sendingAdminChat || !adminChatText.trim()}
+                  style={{ minWidth: '95px' }}
+                >
+                  {sendingAdminChat ? <span className="spinner" style={{ width: 16, height: 16 }} /> : '전송 💬'}
+                </button>
+              </form>
+            </div>
+
+            {/* 채팅 리스트 및 삭제 기능 */}
             <div className="admin-chat-list">
               {messages.slice().reverse().map((msg) => (
                 <div key={msg.id} className="admin-chat-item">
                   <div className="avatar avatar-sm">{msg.name?.[0] || '?'}</div>
                   <div className="admin-chat-item__body">
                     <div className="admin-chat-item__header">
-                      <span className="admin-chat-item__author">{msg.name}</span>
+                      <span className="admin-chat-item__author">
+                        {msg.name} {msg.isAdmin && <span className="badge badge-warning text-xs" style={{ marginLeft: 4 }}>관리자</span>}
+                      </span>
                       <span className="text-xs text-muted">{formatTime(msg.timestamp)}</span>
                     </div>
                     <div className="admin-chat-item__text">{msg.text}</div>
@@ -1080,7 +1133,7 @@ export default function AdminPage() {
                 </div>
               ))}
               {messages.length === 0 && (
-                <div className="admin-empty">채팅 내역이 없습니다.</div>
+                <div className="admin-empty">채팅 내역이 없습니다. 첫 메시지를 전송해 참가자들과 대화해보세요!</div>
               )}
             </div>
           </div>
