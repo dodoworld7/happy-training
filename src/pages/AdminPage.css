@@ -325,15 +325,19 @@
     gap: 10px;
   }
   .admin-header__left {
-    gap: 8px;
+    gap: 6px;
     min-width: 0;
+    flex: 1;
   }
   .admin-title {
-    font-size: 1.1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 170px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    max-width: none !important;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.2;
   }
   .admin-tabs {
     padding: 6px 8px;

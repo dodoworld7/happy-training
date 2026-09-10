@@ -535,7 +535,7 @@ export default function AdminPage() {
   };
   const onlineCount = participants.filter(p => checkIsOnline(p)).length;
 
-  const displayTitle = (!roomInfo.title || roomInfo.title === '해피연수') ? '링크데이(토크콘서트) 관리 대시보드' : roomInfo.title.replace(/해피연수/g, '링크데이(토크콘서트)');
+  const displayTitle = (!roomInfo.title || roomInfo.title === '해피연수') ? '링크데이(토크콘서트)' : roomInfo.title.replace(/해피연수/g, '링크데이(토크콘서트)');
 
   return (
     <div className="admin-layout">
