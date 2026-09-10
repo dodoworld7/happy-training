@@ -188,10 +188,20 @@
 .required { color: var(--color-danger); }
 .optional { color: var(--color-text-subtle); font-weight: 400; font-size: var(--font-size-xs); }
 
-/* 하단 텍스트 */
-.login-footer-text {
+/* 제작자 표시 */
+.login-author-tag {
   text-align: center;
   margin-top: var(--space-6);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.3px;
+}
+
+/* 하단 안내 텍스트 */
+.login-footer-text {
+  text-align: center;
+  margin-top: 6px;
   font-size: var(--font-size-xs);
   color: var(--color-text-subtle);
 }

@@ -213,13 +213,13 @@ export default function LoginPage() {
           </form>
         )}
 
-        {/* 하단 안내 */}
+        {/* 제작자 표시 및 하단 안내 */}
+        <div className="login-author-tag">
+          made by 김도현
+        </div>
         <p className="login-footer-text">
           연수 코드를 모르신다면 운영자에게 문의하세요.
         </p>
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', fontWeight: '500', letterSpacing: '0.5px' }}>
-          made by 김도현
-        </div>
       </div>
     </div>
   );
