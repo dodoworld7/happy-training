@@ -430,7 +430,7 @@ export default function RoomPage() {
       {/* 진행 중인 실시간 투표 위젯 */}
       <PollWidget roomId={roomId} user={user} />
 
-      {/* 탭 네비게이션 (채팅 vs 질문함 vs 워드클라우드) */}
+      {/* 탭 네비게이션 (실시간 채팅 -> 워드 클라우드 -> 익명 질문함 순서) */}
       <div className="room-subtabs">
         <button
           className={`room-subtab ${activeTab === 'chat' ? 'room-subtab--active' : ''}`}
@@ -444,12 +444,6 @@ export default function RoomPage() {
           )}
         </button>
         <button
-          className={`room-subtab ${activeTab === 'question' ? 'room-subtab--active' : ''}`}
-          onClick={() => handleTabChange('question')}
-        >
-          <span>🙋‍♂️ 익명 질문함</span>
-        </button>
-        <button
           className={`room-subtab ${activeTab === 'wordcloud' ? 'room-subtab--active' : ''}`}
           onClick={() => handleTabChange('wordcloud')}
         >
@@ -459,6 +453,12 @@ export default function RoomPage() {
               NEW
             </span>
           )}
+        </button>
+        <button
+          className={`room-subtab ${activeTab === 'question' ? 'room-subtab--active' : ''}`}
+          onClick={() => handleTabChange('question')}
+        >
+          <span>🙋‍♂️ 익명 질문함</span>
         </button>
       </div>
 
