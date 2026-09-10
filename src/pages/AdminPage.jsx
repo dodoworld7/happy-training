@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import {
   doc, collection, query, orderBy, onSnapshot, addDoc, updateDoc,
-  deleteDoc, serverTimestamp, onSnapshot as onDocSnapshot, getDocs, limit
+  deleteDoc, serverTimestamp, onSnapshot as onDocSnapshot, limit
 } from 'firebase/firestore';
 import './AdminPage.css';
 
@@ -35,6 +35,19 @@ export default function AdminPage() {
   const [wordclouds, setWordclouds] = useState([]);
   const [activeTab, setActiveTab] = useState('attendance');
   const [loading, setLoading] = useState(true);
+
+  // 관리자 탭 알림 상태 (참가자 입력 시 실시간 알림)
+  const activeTabRef = useRef('attendance');
+  const [unreadAdminChatCount, setUnreadAdminChatCount] = useState(0);
+  const [hasNewQuestionAlert, setHasNewQuestionAlert] = useState(false);
+  const [hasNewWcAlert, setHasNewWcAlert] = useState(false);
+  const [hasNewPollAlert, setHasNewPollAlert] = useState(false);
+
+  // 이전 개수 추적용 Ref
+  const lastMsgCountRef = useRef(null);
+  const lastQuestionCountRef = useRef(null);
+  const lastWcResponseCountRef = useRef(null);
+  const lastPollVoteCountRef = useRef(null);
 
   // 투표 생성 폼 상태
   const [pollQuestion, setPollQuestion] = useState('');
@@ -152,6 +165,86 @@ export default function AdminPage() {
       console.error('워드클라우드 수신 오류:', err);
     });
   }, [roomId]);
+
+  // 1. 참가자 채팅 감지 -> 채팅 관리 탭 알림 뱃지
+  useEffect(() => {
+    if (lastMsgCountRef.current === null) {
+      lastMsgCountRef.current = messages.length;
+      return;
+    }
+    if (messages.length > lastMsgCountRef.current) {
+      const newMsgs = messages.slice(lastMsgCountRef.current);
+      lastMsgCountRef.current = messages.length;
+      const incoming = newMsgs.filter(m => m.name !== '운영자' && m.name !== user?.name);
+      if (incoming.length > 0 && activeTabRef.current !== 'chat') {
+        setUnreadAdminChatCount(prev => prev + incoming.length);
+      }
+    } else {
+      lastMsgCountRef.current = messages.length;
+    }
+  }, [messages, user]);
+
+  // 2. 참가자 익명 질문 등록 감지 -> 익명 질문 관리 탭 알림 뱃지
+  useEffect(() => {
+    if (lastQuestionCountRef.current === null) {
+      lastQuestionCountRef.current = questions.length;
+      return;
+    }
+    if (questions.length > lastQuestionCountRef.current) {
+      lastQuestionCountRef.current = questions.length;
+      if (activeTabRef.current !== 'question') {
+        setHasNewQuestionAlert(true);
+      }
+    } else {
+      lastQuestionCountRef.current = questions.length;
+    }
+  }, [questions]);
+
+  // 3. 워드클라우드 참가자 단어 제출 감지 -> 워드 클라우드 탭 알림 뱃지
+  useEffect(() => {
+    const activeWc = wordclouds.find(w => w.isActive);
+    const count = activeWc ? Object.keys(activeWc.responses || {}).length : 0;
+    if (lastWcResponseCountRef.current === null) {
+      lastWcResponseCountRef.current = count;
+      return;
+    }
+    if (count > lastWcResponseCountRef.current) {
+      lastWcResponseCountRef.current = count;
+      if (activeTabRef.current !== 'wordcloud') {
+        setHasNewWcAlert(true);
+      }
+    } else {
+      lastWcResponseCountRef.current = count;
+    }
+  }, [wordclouds]);
+
+  // 4. 실시간 투표 참가자 투표 감지 -> 투표 탭 알림 뱃지
+  useEffect(() => {
+    const activePoll = polls.find(p => p.isActive);
+    const voteTotal = activePoll ? (activePoll.options || []).reduce((acc, o) => acc + (o.votes || 0), 0) : 0;
+    if (lastPollVoteCountRef.current === null) {
+      lastPollVoteCountRef.current = voteTotal;
+      return;
+    }
+    if (voteTotal > lastPollVoteCountRef.current) {
+      lastPollVoteCountRef.current = voteTotal;
+      if (activeTabRef.current !== 'poll') {
+        setHasNewPollAlert(true);
+      }
+    } else {
+      lastPollVoteCountRef.current = voteTotal;
+    }
+  }, [polls]);
+
+  // 관리자 탭 전환 핸들러 (선택 시 해당 탭 알림 초기화)
+  const handleAdminTabChange = (tabId) => {
+    setActiveTab(tabId);
+    activeTabRef.current = tabId;
+    if (tabId === 'chat') setUnreadAdminChatCount(0);
+    if (tabId === 'question') setHasNewQuestionAlert(false);
+    if (tabId === 'wordcloud') setHasNewWcAlert(false);
+    if (tabId === 'poll') setHasNewPollAlert(false);
+  };
 
   // 새 워드클라우드 만들기
   const handleCreateWc = async (e) => {
@@ -613,21 +706,50 @@ export default function AdminPage() {
         {[
           { id: 'attendance', label: '📋 참가자 현황', count: onlineCount },
           { id: 'pin', label: '📌 공지 관리', count: null },
-          { id: 'chat', label: '💬 채팅 관리', count: messages.length },
-          { id: 'poll', label: '📊 실시간 투표', count: polls.filter(p => p.isActive).length ? 'ON' : null },
-          { id: 'wordcloud', label: '☁️ 워드 클라우드', count: wordclouds.filter(w => w.isActive).length ? 'ON' : null },
+          {
+            id: 'chat',
+            label: '💬 채팅 관리',
+            count: messages.length,
+            hasAlert: unreadAdminChatCount > 0,
+            alertText: `+${unreadAdminChatCount}`,
+          },
+          {
+            id: 'poll',
+            label: '📊 실시간 투표',
+            count: polls.filter(p => p.isActive).length ? 'ON' : null,
+            hasAlert: hasNewPollAlert,
+            alertText: 'NEW',
+          },
+          {
+            id: 'wordcloud',
+            label: '☁️ 워드 클라우드',
+            count: wordclouds.filter(w => w.isActive).length ? 'ON' : null,
+            hasAlert: hasNewWcAlert,
+            alertText: 'NEW',
+          },
           { id: 'link', label: '🔗 링크 전송', count: links.length },
-          { id: 'question', label: '🙋‍♂️ 익명 질문 관리', count: questions.filter(q => !q.isAnswered).length },
+          {
+            id: 'question',
+            label: '🙋‍♂️ 익명 질문 관리',
+            count: questions.filter(q => !q.isAnswered).length,
+            hasAlert: hasNewQuestionAlert,
+            alertText: 'NEW',
+          },
         ].map(tab => (
           <button
             key={tab.id}
             id={`tab-${tab.id}`}
-            className={`admin-tab ${activeTab === tab.id ? 'admin-tab--active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
+            className={`admin-tab ${activeTab === tab.id ? 'admin-tab--active' : ''} ${tab.hasAlert ? 'admin-tab--has-alert' : ''}`}
+            onClick={() => handleAdminTabChange(tab.id)}
           >
-            {tab.label}
+            <span>{tab.label}</span>
             {tab.count !== null && (
               <span className="admin-tab__count">{tab.count}</span>
+            )}
+            {tab.hasAlert && (
+              <span className="admin-tab__alert-badge animate-pop">
+                {tab.alertText || 'NEW'}
+              </span>
             )}
           </button>
         ))}

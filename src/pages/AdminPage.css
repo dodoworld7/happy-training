@@ -134,6 +134,39 @@
   color: var(--color-primary);
 }
 
+/* 관리자 탭 신규 입력 알림 배지 */
+.admin-tab--has-alert {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.admin-tab__alert-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25), 0 2px 8px rgba(239, 68, 68, 0.5);
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25), 0 2px 8px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.4), 0 3px 12px rgba(239, 68, 68, 0.7);
+  }
+}
+
 /* 콘텐츠 영역 */
 .admin-content {
   flex: 1;

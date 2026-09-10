@@ -107,10 +107,19 @@ export default function WordCloudPanel({ roomId, user }) {
 
   return (
     <div className="wordcloud-panel">
+      {/* 새 워드클라우드 시작 알림 배너 */}
+      <div className="wordcloud-new-banner animate-pop">
+        <span className="wordcloud-new-banner__icon">🔔</span>
+        <span className="wordcloud-new-banner__text">
+          관리자가 <strong>새로운 워드 클라우드 주제</strong>를 시작했습니다! 지금 자유롭게 단어를 남겨주세요.
+        </span>
+      </div>
+
       {/* 질문 및 제출 폼 카드 */}
       <div className="wordcloud-form-card">
         <div className="wordcloud-question-badge">
           <span>☁️ 실시간 워드 클라우드</span>
+          <span className="wordcloud-live-tag">진행 중</span>
         </div>
         <h2 className="wordcloud-question-title">{activeWordCloud.question}</h2>
 

@@ -37,7 +37,6 @@ export default function RoomPage() {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [hasNewWordCloud, setHasNewWordCloud] = useState(false);
   const lastMessageCountRef = useRef(0);
-  const activeWcIdRef = useRef(null);
   const activeTabRef = useRef(activeTab);
 
   useEffect(() => {

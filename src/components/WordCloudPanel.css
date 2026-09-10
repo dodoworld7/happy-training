@@ -33,6 +33,30 @@
   background: rgba(99, 102, 241, 0.45);
 }
 
+/* 새 워드클라우드 시작 알림 배너 */
+.wordcloud-new-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1.5px solid #f59e0b;
+  color: #92400e;
+  padding: 12px 18px;
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.18);
+  flex-shrink: 0;
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+.wordcloud-new-banner__icon {
+  font-size: 1.4rem;
+  animation: bounceDot 1.4s infinite ease-in-out;
+}
+.wordcloud-new-banner__text strong {
+  color: #78350f;
+  text-decoration: underline;
+}
+
 .wordcloud-form-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -48,7 +72,7 @@
 .wordcloud-question-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   background: var(--gradient-primary);
   color: #ffffff;
   padding: 6px 14px;
@@ -57,6 +81,16 @@
   font-weight: 800;
   width: fit-content;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.wordcloud-live-tag {
+  background: #10b981;
+  color: #ffffff;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .wordcloud-question-title {
