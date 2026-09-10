@@ -145,13 +145,13 @@ export default function RoomPage() {
       lastSeen: serverTimestamp()
     }).catch(console.error);
 
-    // 2. 30초 주기 하트비트
+    // 2. 3분 주기 하트비트 (180,000ms)
     const heartbeatTimer = setInterval(() => {
       updateDoc(participantRef, {
         isOnline: true,
         lastSeen: serverTimestamp()
       }).catch(() => {});
-    }, 30000);
+    }, 180000);
 
     // 3. 창/탭 종료 및 화면 비활성화 감지
     const handleOff = () => {
@@ -233,7 +233,7 @@ export default function RoomPage() {
     if (p.isOnline === false || p.isKicked) return false;
     if (p.lastSeen) {
       const lastSeenTime = p.lastSeen.toDate ? p.lastSeen.toDate().getTime() : (typeof p.lastSeen === 'number' ? p.lastSeen : new Date(p.lastSeen).getTime());
-      if (Date.now() - lastSeenTime > 90000) return false;
+      if (Date.now() - lastSeenTime > 210000) return false;
     }
     return true;
   }).length;

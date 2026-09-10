@@ -12,7 +12,7 @@ export default function ParticipantList({ participants, currentUser }) {
     if (p.isOnline === false || p.isKicked) return false;
     if (p.lastSeen) {
       const lastSeenTime = p.lastSeen.toDate ? p.lastSeen.toDate().getTime() : (typeof p.lastSeen === 'number' ? p.lastSeen : new Date(p.lastSeen).getTime());
-      if (Date.now() - lastSeenTime > 90000) return false;
+      if (Date.now() - lastSeenTime > 210000) return false;
     }
     return true;
   };
