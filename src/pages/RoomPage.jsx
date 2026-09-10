@@ -38,6 +38,11 @@ export default function RoomPage() {
   const [hasNewWordCloud, setHasNewWordCloud] = useState(false);
   const lastMessageCountRef = useRef(0);
   const activeWcIdRef = useRef(null);
+  const activeTabRef = useRef(activeTab);
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
 
   // 미니 토스트 알림 상태
   const [notificationToast, setNotificationToast] = useState(null);
@@ -177,10 +182,13 @@ export default function RoomPage() {
   // 워드클라우드 실시간 감지 -> 새 활성 주제 개설 시 알림 배지 및 토스트
   useEffect(() => {
     if (!roomId) return;
+    let isFirstSnapshot = true;
     const q = collection(db, 'rooms', roomId, 'wordclouds');
+
     const unsub = onSnapshot(q, (snap) => {
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       const activeList = list.filter(w => w.isActive);
+
       if (activeList.length > 0) {
         activeList.sort((a, b) => {
           const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (a.createdAt || 0);
@@ -188,25 +196,39 @@ export default function RoomPage() {
           return timeB - timeA;
         });
         const latestActive = activeList[0];
+        const topicText = latestActive.question || latestActive.topic || '새로운 주제';
 
-        // 이전에 알던 워드클라우드와 다르고 새로 켜졌을 때
-        if (activeWcIdRef.current && activeWcIdRef.current !== latestActive.id) {
-          if (activeTab !== 'wordcloud') {
+        if (isFirstSnapshot) {
+          // 입장 시 활성 워드클라우드가 있고 아직 워드클라우드 탭을 안 봤다면 배지 표시
+          activeWcIdRef.current = latestActive.id;
+          if (activeTabRef.current !== 'wordcloud') {
             setHasNewWordCloud(true);
-            showToast(`☁️ 새로운 워드 클라우드 주제가 열렸습니다!`, () => {
-              setActiveTab('wordcloud');
-              setHasNewWordCloud(false);
-            });
+          }
+          isFirstSnapshot = false;
+        } else {
+          // 관리자가 워드클라우드를 새로 개설/활성화했을 때 (ID가 변경되었거나 새로 켜진 경우)
+          if (activeWcIdRef.current !== latestActive.id) {
+            activeWcIdRef.current = latestActive.id;
+            if (activeTabRef.current !== 'wordcloud') {
+              setHasNewWordCloud(true);
+              showToast(`☁️ 새로운 워드 클라우드: "${topicText}"`, () => {
+                handleTabChange('wordcloud');
+              });
+            }
           }
         }
-        activeWcIdRef.current = latestActive.id;
       } else {
+        // 활성 워드클라우드가 없으면
         activeWcIdRef.current = null;
         setHasNewWordCloud(false);
+        isFirstSnapshot = false;
       }
+    }, (err) => {
+      console.error('워드클라우드 알림 구독 오류:', err);
     });
+
     return unsub;
-  }, [roomId, activeTab]);
+  }, [roomId]);
 
   // 채팅 메시지 감지 -> 다른 탭 보고 있을 때 새 메시지 배지 카운트 및 토스트
   useEffect(() => {
@@ -222,23 +244,23 @@ export default function RoomPage() {
 
       // 내가 작성한 메시지가 아닌 다른 사람/관리자 메시지 필터
       const incoming = newMessages.filter(m => m.name !== user?.name);
-      if (incoming.length > 0 && activeTab !== 'chat') {
+      if (incoming.length > 0 && activeTabRef.current !== 'chat') {
         setUnreadChatCount(prev => prev + incoming.length);
         const lastMsg = incoming[incoming.length - 1];
         const preview = lastMsg.text ? (lastMsg.text.length > 25 ? `${lastMsg.text.slice(0, 25)}...` : lastMsg.text) : '새 메시지';
         showToast(`💬 ${lastMsg.name}: ${preview}`, () => {
-          setActiveTab('chat');
-          setUnreadChatCount(0);
+          handleTabChange('chat');
         });
       }
     } else {
       lastMessageCountRef.current = messages.length;
     }
-  }, [messages, activeTab, user]);
+  }, [messages, user]);
 
   // 탭 변경 처리 (알림 뱃지 읽음 처리)
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
+    activeTabRef.current = newTab;
     if (newTab === 'chat') {
       setUnreadChatCount(0);
     } else if (newTab === 'wordcloud') {
