@@ -543,15 +543,15 @@ export default function AdminPage() {
       <header className="admin-header">
         <div className="admin-header__left">
           <div className="room-logo">🎓</div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="admin-title-row">
               <h1 className="admin-title">{displayTitle}</h1>
               <span className="badge badge-warning">관리자</span>
             </div>
             <div className="header-author-tag">made by 김도현</div>
           </div>
         </div>
-        <div className="admin-header__right flex items-center gap-3">
+        <div className="admin-header__right">
           <div className="admin-stat">
             <span className="admin-stat__num">{onlineCount}</span>
             <span className="admin-stat__label">현재 접속</span>
@@ -562,11 +562,11 @@ export default function AdminPage() {
           </div>
           <button
             className="btn btn-danger btn-sm"
-            style={{ fontWeight: 800, padding: '8px 14px', borderRadius: '8px' }}
+            style={{ fontWeight: 800 }}
             onClick={handleClearEntireRoomData}
             title="이 연수의 모든 데이터(참가자, 채팅, 투표, 질문, 워드클라우드, 링크, 공지)를 초기화합니다"
           >
-            🚨 연수 전체 초기화
+            🚨 <span className="hide-mobile">연수 </span>전체 초기화
           </button>
           <button
             className="btn btn-ghost btn-sm"
