@@ -313,9 +313,18 @@ export default function AdminPage() {
   // 공지 핀 저장
   const handleSavePin = async (e) => {
     e.preventDefault();
+    const text = pinText.trim();
+    if (!text) {
+      alert('공지 내용을 입력해 주세요.');
+      return;
+    }
     setSavingPin(true);
     try {
-      await updateDoc(doc(db, 'rooms', roomId), { pinnedMessage: pinText.trim() });
+      await updateDoc(doc(db, 'rooms', roomId), {
+        pinnedMessage: text,
+        pinnedAt: serverTimestamp(),
+      });
+      alert('✅ 참가자 화면에 공지가 즉시 팝업 및 고정되었습니다!');
     } catch (err) {
       alert('저장 오류: ' + err.message);
     }

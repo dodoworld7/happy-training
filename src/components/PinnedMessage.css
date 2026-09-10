@@ -1,14 +1,36 @@
 /* PinnedMessage.css — 라이트 모드 */
 .pinned-bar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-6);
+  padding: 0.65rem var(--space-6);
   background: linear-gradient(90deg, #fffbeb 0%, #fefce8 100%);
   border-bottom: 1px solid #fde68a;
   font-size: var(--font-size-sm);
   color: #92400e;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
-.pinned-bar__icon { flex-shrink: 0; margin-top: 1px; }
-.pinned-bar__text { flex: 1; line-height: 1.5; font-weight: 500; }
+.pinned-bar:hover {
+  background: linear-gradient(90deg, #fef3c7 0%, #fef9c3 100%);
+  border-bottom-color: #f59e0b;
+}
+.pinned-bar__icon { flex-shrink: 0; margin-top: 1px; font-size: 1.1rem; }
+.pinned-bar__text {
+  flex: 1;
+  line-height: 1.5;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pinned-bar__more {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.12);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}

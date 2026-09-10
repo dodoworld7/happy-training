@@ -4,11 +4,33 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  flex: 1;
   height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   padding: var(--space-4);
+  padding-bottom: 5rem;
   max-width: 950px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
+}
+
+/* 부드럽고 얇은 스크롤바 */
+.wordcloud-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.wordcloud-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wordcloud-panel::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.25);
+  border-radius: 999px;
+}
+.wordcloud-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.45);
 }
 
 .wordcloud-form-card {
@@ -20,6 +42,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .wordcloud-question-badge {
@@ -56,14 +79,15 @@
   border: 2px solid rgba(99, 102, 241, 0.2);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
-  min-height: 420px;
+  min-height: 380px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
   box-shadow: 0 20px 40px rgba(99, 102, 241, 0.12);
-  overflow: hidden;
+  overflow: visible;
+  flex-shrink: 0;
 }
 
 .wordcloud-canvas-header {
@@ -192,9 +216,33 @@
   50% { transform: translateY(-10px); }
 }
 
+@media (max-width: 1024px) {
+  .wordcloud-panel {
+    padding: var(--space-3);
+    padding-bottom: 5.5rem;
+    gap: var(--space-4);
+  }
+  .wordcloud-form-card {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+  .wordcloud-question-title {
+    font-size: 1.35rem;
+  }
+  .wordcloud-canvas-card {
+    min-height: 320px;
+    padding: var(--space-4);
+  }
+  .wordcloud-cloud-container {
+    padding: var(--space-3);
+    gap: 12px 16px;
+  }
+}
+
 @media (max-width: 768px) {
   .wordcloud-panel {
     padding: 10px 8px;
+    padding-bottom: 6rem;
     gap: 12px;
   }
   .wordcloud-form-card {
@@ -206,7 +254,7 @@
   }
   .wordcloud-canvas-card {
     padding: 12px 8px;
-    min-height: 280px;
+    min-height: 260px;
   }
   .wordcloud-cloud-container {
     padding: 8px;

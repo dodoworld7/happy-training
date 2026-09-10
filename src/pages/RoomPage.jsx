@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import {
@@ -8,6 +8,7 @@ import PinnedMessage from '../components/PinnedMessage';
 import ChatPanel from '../components/ChatPanel';
 import ParticipantList from '../components/ParticipantList';
 import LinkPopup from '../components/LinkPopup';
+import NoticePopup from '../components/NoticePopup';
 import PollWidget from '../components/PollWidget';
 import QuestionPanel from '../components/QuestionPanel';
 import WordCloudPanel from '../components/WordCloudPanel';
@@ -26,6 +27,29 @@ export default function RoomPage() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('chat');
+
+  // 공지 팝업 상태
+  const [noticeModalMessage, setNoticeModalMessage] = useState('');
+  const [showNoticePopup, setShowNoticePopup] = useState(false);
+  const lastNoticeKeyRef = useRef('');
+
+  // 탭 알림 상태 (채팅 새 메시지 수, 워드클라우드 신규 여부)
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [hasNewWordCloud, setHasNewWordCloud] = useState(false);
+  const lastMessageCountRef = useRef(0);
+  const activeWcIdRef = useRef(null);
+
+  // 미니 토스트 알림 상태
+  const [notificationToast, setNotificationToast] = useState(null);
+  const toastTimerRef = useRef(null);
+
+  const showToast = (text, onClick) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setNotificationToast({ text, onClick });
+    toastTimerRef.current = setTimeout(() => {
+      setNotificationToast(null);
+    }, 4500);
+  };
 
   // 세션 확인
   useEffect(() => {
@@ -131,6 +155,96 @@ export default function RoomPage() {
     });
     return unsub;
   }, [roomId]);
+
+  // 공지사항 실시간 감지 -> 참가자 화면 즉시 팝업 표시
+  useEffect(() => {
+    if (!roomInfo?.pinnedMessage) {
+      setShowNoticePopup(false);
+      return;
+    }
+    const pinnedTime = roomInfo.pinnedAt?.toDate
+      ? roomInfo.pinnedAt.toDate().getTime()
+      : (typeof roomInfo.pinnedAt === 'number' ? roomInfo.pinnedAt : (roomInfo.pinnedAt ? new Date(roomInfo.pinnedAt).getTime() : ''));
+    const noticeKey = `${roomInfo.pinnedMessage}_${pinnedTime}`;
+
+    if (lastNoticeKeyRef.current !== noticeKey) {
+      lastNoticeKeyRef.current = noticeKey;
+      setNoticeModalMessage(roomInfo.pinnedMessage);
+      setShowNoticePopup(true);
+    }
+  }, [roomInfo?.pinnedMessage, roomInfo?.pinnedAt]);
+
+  // 워드클라우드 실시간 감지 -> 새 활성 주제 개설 시 알림 배지 및 토스트
+  useEffect(() => {
+    if (!roomId) return;
+    const q = collection(db, 'rooms', roomId, 'wordclouds');
+    const unsub = onSnapshot(q, (snap) => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const activeList = list.filter(w => w.isActive);
+      if (activeList.length > 0) {
+        activeList.sort((a, b) => {
+          const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (a.createdAt || 0);
+          const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (b.createdAt || 0);
+          return timeB - timeA;
+        });
+        const latestActive = activeList[0];
+
+        // 이전에 알던 워드클라우드와 다르고 새로 켜졌을 때
+        if (activeWcIdRef.current && activeWcIdRef.current !== latestActive.id) {
+          if (activeTab !== 'wordcloud') {
+            setHasNewWordCloud(true);
+            showToast(`☁️ 새로운 워드 클라우드 주제가 열렸습니다!`, () => {
+              setActiveTab('wordcloud');
+              setHasNewWordCloud(false);
+            });
+          }
+        }
+        activeWcIdRef.current = latestActive.id;
+      } else {
+        activeWcIdRef.current = null;
+        setHasNewWordCloud(false);
+      }
+    });
+    return unsub;
+  }, [roomId, activeTab]);
+
+  // 채팅 메시지 감지 -> 다른 탭 보고 있을 때 새 메시지 배지 카운트 및 토스트
+  useEffect(() => {
+    if (messages.length === 0) return;
+    if (lastMessageCountRef.current === 0) {
+      lastMessageCountRef.current = messages.length;
+      return;
+    }
+
+    if (messages.length > lastMessageCountRef.current) {
+      const newMessages = messages.slice(lastMessageCountRef.current);
+      lastMessageCountRef.current = messages.length;
+
+      // 내가 작성한 메시지가 아닌 다른 사람/관리자 메시지 필터
+      const incoming = newMessages.filter(m => m.name !== user?.name);
+      if (incoming.length > 0 && activeTab !== 'chat') {
+        setUnreadChatCount(prev => prev + incoming.length);
+        const lastMsg = incoming[incoming.length - 1];
+        const preview = lastMsg.text ? (lastMsg.text.length > 25 ? `${lastMsg.text.slice(0, 25)}...` : lastMsg.text) : '새 메시지';
+        showToast(`💬 ${lastMsg.name}: ${preview}`, () => {
+          setActiveTab('chat');
+          setUnreadChatCount(0);
+        });
+      }
+    } else {
+      lastMessageCountRef.current = messages.length;
+    }
+  }, [messages, activeTab, user]);
+
+  // 탭 변경 처리 (알림 뱃지 읽음 처리)
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    if (newTab === 'chat') {
+      setUnreadChatCount(0);
+    } else if (newTab === 'wordcloud') {
+      setHasNewWordCloud(false);
+    }
+  };
 
   // 온라인 상태 및 하트비트 관리 (입장 시 온라인, 주기적 lastSeen, 탭/창 종료 시 오프라인)
   useEffect(() => {
@@ -240,9 +354,33 @@ export default function RoomPage() {
 
   return (
     <div className="room-layout">
+      {/* 운영자 공지사항 즉시 팝업 모달 */}
+      {showNoticePopup && noticeModalMessage && (
+        <NoticePopup
+          message={noticeModalMessage}
+          onClose={() => setShowNoticePopup(false)}
+        />
+      )}
+
       {/* 링크 팝업 */}
       {latestLink && (
         <LinkPopup link={latestLink} onClose={() => setLatestLink(null)} />
+      )}
+
+      {/* 새 소식 미니 플로팅 토스트 */}
+      {notificationToast && (
+        <div
+          className="room-notification-toast animate-slide-in"
+          onClick={() => {
+            if (notificationToast.onClick) notificationToast.onClick();
+            setNotificationToast(null);
+          }}
+          role="button"
+          tabIndex={0}
+        >
+          <span className="room-notification-toast__text">{notificationToast.text}</span>
+          <span className="room-notification-toast__action">보기 →</span>
+        </div>
       )}
 
       {/* 헤더 */}
@@ -280,9 +418,15 @@ export default function RoomPage() {
         </div>
       </header>
 
-      {/* 고정 공지 */}
+      {/* 고정 공지 (클릭 시 공지 팝업 다시 보기) */}
       {roomInfo.pinnedMessage && (
-        <PinnedMessage message={roomInfo.pinnedMessage} />
+        <PinnedMessage
+          message={roomInfo.pinnedMessage}
+          onClick={() => {
+            setNoticeModalMessage(roomInfo.pinnedMessage);
+            setShowNoticePopup(true);
+          }}
+        />
       )}
 
       {/* 진행 중인 실시간 투표 위젯 */}
@@ -292,21 +436,31 @@ export default function RoomPage() {
       <div className="room-subtabs">
         <button
           className={`room-subtab ${activeTab === 'chat' ? 'room-subtab--active' : ''}`}
-          onClick={() => setActiveTab('chat')}
+          onClick={() => handleTabChange('chat')}
         >
-          💬 실시간 채팅
+          <span>💬 실시간 채팅</span>
+          {unreadChatCount > 0 && (
+            <span className="room-tab-badge room-tab-badge--chat animate-pop">
+              {unreadChatCount > 99 ? '99+' : unreadChatCount}
+            </span>
+          )}
         </button>
         <button
           className={`room-subtab ${activeTab === 'question' ? 'room-subtab--active' : ''}`}
-          onClick={() => setActiveTab('question')}
+          onClick={() => handleTabChange('question')}
         >
-          🙋‍♂️ 익명 질문함
+          <span>🙋‍♂️ 익명 질문함</span>
         </button>
         <button
           className={`room-subtab ${activeTab === 'wordcloud' ? 'room-subtab--active' : ''}`}
-          onClick={() => setActiveTab('wordcloud')}
+          onClick={() => handleTabChange('wordcloud')}
         >
-          ☁️ 워드 클라우드
+          <span>☁️ 워드 클라우드</span>
+          {hasNewWordCloud && (
+            <span className="room-tab-badge room-tab-badge--new">
+              NEW
+            </span>
+          )}
         </button>
       </div>
 
