@@ -44,6 +44,18 @@ export default function RoomPage() {
     activeTabRef.current = activeTab;
   }, [activeTab]);
 
+  // 플로팅 토스트 알림 상태
+  const [notificationToast, setNotificationToast] = useState(null);
+  const toastTimerRef = useRef(null);
+
+  const showToast = (text, onClick) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setNotificationToast({ text, onClick });
+    toastTimerRef.current = setTimeout(() => {
+      setNotificationToast(null);
+    }, 4500);
+  };
+
   // 세션 확인
   useEffect(() => {
     const stored = sessionStorage.getItem('happyUser');
@@ -167,7 +179,33 @@ export default function RoomPage() {
     }
   }, [roomInfo?.pinnedMessage, roomInfo?.pinnedAt]);
 
-  // 워드클라우드 실시간 감지 -> 새 활성 주제 개설 시 알림 배지 활성화
+  // 1. 방 문서 기반 워드클라우드 신규 시작 즉시 감지
+  const lastWcAtRef = useRef(null);
+  useEffect(() => {
+    if (!roomInfo?.activeWordCloudTopic || !roomInfo?.activeWordCloudAt) {
+      if (!roomInfo?.activeWordCloudTopic) setHasNewWordCloud(false);
+      return;
+    }
+    const wcTime = roomInfo.activeWordCloudAt?.toDate
+      ? roomInfo.activeWordCloudAt.toDate().getTime()
+      : (typeof roomInfo.activeWordCloudAt === 'number' ? roomInfo.activeWordCloudAt : new Date(roomInfo.activeWordCloudAt).getTime());
+
+    if (lastWcAtRef.current && lastWcAtRef.current !== wcTime) {
+      // 관리자가 워드클라우드를 새로 시작함!
+      setHasNewWordCloud(true);
+      showToast(`☁️ 새로운 워드 클라우드: "${roomInfo.activeWordCloudTopic}"`, () => {
+        handleTabChange('wordcloud');
+      });
+    } else if (!lastWcAtRef.current) {
+      // 입장 시 이미 진행 중인 워드클라우드가 있고 아직 워드클라우드 탭이 아니라면
+      if (activeTabRef.current !== 'wordcloud') {
+        setHasNewWordCloud(true);
+      }
+    }
+    lastWcAtRef.current = wcTime;
+  }, [roomInfo?.activeWordCloudTopic, roomInfo?.activeWordCloudAt]);
+
+  // 2. 컬렉션 기반 워드클라우드 실시간 보조 감지
   useEffect(() => {
     if (!roomId) return;
     let initialLoad = true;
@@ -178,7 +216,6 @@ export default function RoomPage() {
       const activeList = list.filter(w => w.isActive);
 
       if (initialLoad) {
-        // 방 입장 시점: 활성화된 워드클라우드가 있고 아직 워드클라우드 탭이 아니라면 배지 표시
         if (activeList.length > 0 && activeTabRef.current !== 'wordcloud') {
           setHasNewWordCloud(true);
         }
@@ -186,17 +223,23 @@ export default function RoomPage() {
         return;
       }
 
-      // 실시간 변경 감지: 새 워드클라우드가 생성되거나 활성화(isActive === true)된 경우
       let hasActivated = false;
+      let activeTopic = '';
       snap.docChanges().forEach((change) => {
         const data = change.doc.data();
         if ((change.type === 'added' || change.type === 'modified') && data.isActive) {
           hasActivated = true;
+          activeTopic = data.question || data.topic || '새 주제';
         }
       });
 
-      if (hasActivated && activeTabRef.current !== 'wordcloud') {
+      if (hasActivated) {
         setHasNewWordCloud(true);
+        if (activeTabRef.current !== 'wordcloud') {
+          showToast(`☁️ 새로운 워드 클라우드: "${activeTopic}"`, () => {
+            handleTabChange('wordcloud');
+          });
+        }
       } else if (activeList.length === 0) {
         setHasNewWordCloud(false);
       }
@@ -207,7 +250,7 @@ export default function RoomPage() {
     return unsub;
   }, [roomId]);
 
-  // 채팅 메시지 감지 -> 다른 탭 보고 있을 때 실시간 채팅 옆 대화 개수 뱃지 증가 (화면 오른쪽 토스트 없음)
+  // 3. 채팅 메시지 감지 -> 다른 탭 보고 있을 때 실시간 채팅 대화 개수 뱃지 증가 및 알림 토스트
   useEffect(() => {
     if (messages.length === 0) return;
     if (lastMessageCountRef.current === 0) {
@@ -223,6 +266,11 @@ export default function RoomPage() {
       const incoming = newMessages.filter(m => m.name !== user?.name);
       if (incoming.length > 0 && activeTabRef.current !== 'chat') {
         setUnreadChatCount(prev => prev + incoming.length);
+        const lastMsg = incoming[incoming.length - 1];
+        const preview = lastMsg.text ? (lastMsg.text.length > 25 ? `${lastMsg.text.slice(0, 25)}...` : lastMsg.text) : '새 메시지';
+        showToast(`💬 ${lastMsg.name}: ${preview}`, () => {
+          handleTabChange('chat');
+        });
       }
     } else {
       lastMessageCountRef.current = messages.length;
@@ -359,6 +407,22 @@ export default function RoomPage() {
       {/* 링크 팝업 */}
       {latestLink && (
         <LinkPopup link={latestLink} onClose={() => setLatestLink(null)} />
+      )}
+
+      {/* 새 소식 미니 플로팅 토스트 */}
+      {notificationToast && (
+        <div
+          className="room-notification-toast animate-slide-in"
+          onClick={() => {
+            if (notificationToast.onClick) notificationToast.onClick();
+            setNotificationToast(null);
+          }}
+          role="button"
+          tabIndex={0}
+        >
+          <span className="room-notification-toast__text">{notificationToast.text}</span>
+          <span className="room-notification-toast__action">보기 →</span>
+        </div>
       )}
 
       {/* 헤더 */}

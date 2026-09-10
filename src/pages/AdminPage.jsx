@@ -156,7 +156,8 @@ export default function AdminPage() {
   // 새 워드클라우드 만들기
   const handleCreateWc = async (e) => {
     e.preventDefault();
-    if (!wcQuestion.trim()) {
+    const topic = wcQuestion.trim();
+    if (!topic) {
       alert('워드 클라우드 주제 질문을 입력해주세요.');
       return;
     }
@@ -168,15 +169,23 @@ export default function AdminPage() {
         await updateDoc(doc(db, 'rooms', roomId, 'wordclouds', w.id), { isActive: false });
       }
 
-      await addDoc(collection(db, 'rooms', roomId, 'wordclouds'), {
-        question: wcQuestion.trim(),
+      // 1. wordclouds 서브컬렉션 문서 추가
+      const newWcDoc = await addDoc(collection(db, 'rooms', roomId, 'wordclouds'), {
+        question: topic,
         responses: {},
         isActive: true,
         createdAt: serverTimestamp(),
       });
 
+      // 2. rooms 문서에도 activeWordCloud 동기화 (참가자 화면 즉시 알림 트리거)
+      await updateDoc(doc(db, 'rooms', roomId), {
+        activeWordCloudId: newWcDoc.id,
+        activeWordCloudTopic: topic,
+        activeWordCloudAt: serverTimestamp(),
+      });
+
       setWcQuestion('');
-      alert('☁️ 새 워드 클라우드 주제가 시작되었습니다!\n참가자 화면 "워드 클라우드" 탭에 표시됩니다.');
+      alert('☁️ 새 워드 클라우드 주제가 시작되었습니다!\n참가자 화면 "워드 클라우드" 탭에 알림이 즉시 표시됩니다.');
     } catch (err) {
       alert('생성 오류: ' + err.message);
     }
@@ -188,6 +197,11 @@ export default function AdminPage() {
     if (!window.confirm('이 워드 클라우드 작성을 마감하시겠습니까?')) return;
     try {
       await updateDoc(doc(db, 'rooms', roomId, 'wordclouds', wcId), { isActive: false });
+      await updateDoc(doc(db, 'rooms', roomId), {
+        activeWordCloudId: null,
+        activeWordCloudTopic: '',
+        activeWordCloudAt: serverTimestamp(),
+      });
       alert('⏹ 마감되었습니다.');
     } catch (err) {
       alert('마감 오류: ' + err.message);
@@ -397,6 +411,11 @@ export default function AdminPage() {
     try {
       const deletePromises = wordclouds.map(w => deleteDoc(doc(db, 'rooms', roomId, 'wordclouds', w.id)));
       await Promise.all(deletePromises);
+      await updateDoc(doc(db, 'rooms', roomId), {
+        activeWordCloudId: null,
+        activeWordCloudTopic: '',
+        activeWordCloudAt: serverTimestamp(),
+      });
       alert('🧹 모든 워드 클라우드가 삭제되었습니다.');
     } catch (err) {
       alert('삭제 오류: ' + err.message);
