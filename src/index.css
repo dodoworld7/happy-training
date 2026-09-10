@@ -417,12 +417,12 @@ body {
 
 /* 헤더 내부 서명 */
 .header-author-tag {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--color-primary);
-  opacity: 0.85;
+  opacity: 1;
   letter-spacing: 0.02em;
-  margin-top: 1px;
+  margin-top: 2px;
   margin-bottom: 2px;
   line-height: 1.2;
 }

@@ -40,14 +40,21 @@
   align-items: center;
   gap: var(--space-4);
 }
+.admin-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  white-space: nowrap;
+}
 .admin-title {
-  font-size: var(--font-size-xl);
-  font-weight: 800;
-  background: linear-gradient(135deg, #5b21b6 0%, #4338ca 100%);
+  font-size: 1.6rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #4c1d95 0%, #3730a3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .admin-stat {
