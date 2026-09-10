@@ -157,49 +157,6 @@
   50% { transform: scale(1.1); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4), 0 4px 14px rgba(239, 68, 68, 0.7); }
 }
 
-/* 새 소식 미니 플로팅 토스트 */
-.room-notification-toast {
-  position: fixed;
-  top: 75px;
-  right: 20px;
-  z-index: 990;
-  background: rgba(15, 23, 42, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #ffffff;
-  padding: 0.65rem 1.15rem;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.18);
-  cursor: pointer;
-  max-width: 90vw;
-  transition: all var(--transition-fast);
-}
-
-.room-notification-toast:hover {
-  background: rgba(15, 23, 42, 0.98);
-  transform: translateY(-2px);
-  box-shadow: 0 14px 28px -5px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.25);
-}
-
-.room-notification-toast__text {
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 320px;
-}
-
-.room-notification-toast__action {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #38bdf8;
-  flex-shrink: 0;
-}
-
 /* 바디 */
 .room-body {
   display: flex;
@@ -315,16 +272,5 @@
   .room-sidebar--open {
     right: 0;
     box-shadow: var(--shadow-lg);
-  }
-  .room-notification-toast {
-    top: 56px;
-    right: 12px;
-    left: 12px;
-    justify-content: space-between;
-    padding: 0.5rem 0.85rem;
-  }
-  .room-notification-toast__text {
-    max-width: calc(100vw - 110px);
-    font-size: 0.8rem;
   }
 }
