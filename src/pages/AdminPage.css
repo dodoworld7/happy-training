@@ -362,3 +362,62 @@
     font-size: 1.2rem;
   }
 }
+
+/* 이력 카드 모바일 가독성 최적화 */
+.admin-history-card__top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.admin-history-card__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.admin-history-card__status .badge {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  flex-shrink: 0;
+}
+
+.participant-count-badge {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.admin-history-card__title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1.4;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.admin-history-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .admin-history-card__actions {
+    width: 100%;
+  }
+  .admin-history-card__actions .btn {
+    flex: 1;
+    white-space: nowrap !important;
+    font-size: 0.8rem;
+    padding: 6px 8px;
+    justify-content: center;
+  }
+}

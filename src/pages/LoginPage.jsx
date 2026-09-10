@@ -218,7 +218,7 @@ export default function LoginPage() {
           연수 코드를 모르신다면 운영자에게 문의하세요.
         </p>
         <div style={{ marginTop: '1.5rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', fontWeight: '500', letterSpacing: '0.5px' }}>
-          made by 남부교육지원청
+          made by 김도현
         </div>
       </div>
     </div>

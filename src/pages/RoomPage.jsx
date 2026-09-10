@@ -251,7 +251,7 @@ export default function RoomPage() {
           <div className="room-logo">🎓</div>
           <div>
             <h1 className="room-title">{displayTitle}</h1>
-            <div className="header-author-tag">made by 남부교육지원청</div>
+            <div className="header-author-tag">made by 김도현</div>
             <p className="room-subtitle text-xs text-muted">
               <span className="online-dot" /> {onlineParticipantsCount}명 참가 중
             </p>

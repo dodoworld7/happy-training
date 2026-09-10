@@ -548,8 +548,7 @@ export default function AdminPage() {
               <h1 className="admin-title">{displayTitle}</h1>
               <span className="badge badge-warning">관리자</span>
             </div>
-            <div className="header-author-tag">made by 남부교육지원청</div>
-            <p className="text-xs text-muted">Room ID: {roomId}</p>
+            <div className="header-author-tag">made by 김도현</div>
           </div>
         </div>
         <div className="admin-header__right flex items-center gap-3">
@@ -739,15 +738,16 @@ export default function AdminPage() {
                     const total = Object.keys(votes).length;
 
                     return (
-                      <div key={p.id} className="admin-card" style={{ borderColor: p.isActive ? 'var(--color-primary-light)' : 'var(--color-border)', backgroundColor: p.isActive ? '#f8faff' : '#ffffff' }}>
-                        <div className="flex items-center justify-between flex-wrap gap-2" style={{ marginBottom: 'var(--space-3)' }}>
-                          <div className="flex items-center gap-2">
+                      <div key={p.id} className="admin-card admin-history-card" style={{ borderColor: p.isActive ? 'var(--color-primary-light)' : 'var(--color-border)', backgroundColor: p.isActive ? '#f8faff' : '#ffffff' }}>
+                        <div className="admin-history-card__top">
+                          <div className="admin-history-card__status">
                             <span className={`badge ${p.isActive ? 'badge-success' : 'badge-warning'}`}>
                               {p.isActive ? '🔴 진행 중 (화면 노출)' : '⚪ 마감됨'}
                             </span>
-                            <h4 className="font-bold text-lg">{p.question}</h4>
+                            <span className="participant-count-badge">({total}표 투표됨)</span>
                           </div>
-                          <div className="flex gap-2">
+                          <h4 className="admin-history-card__title">{p.question}</h4>
+                          <div className="admin-history-card__actions">
                             {p.isActive && (
                               <button className="btn btn-warning btn-sm" onClick={() => handleEndPoll(p.id)}>
                                 ⏹ 투표 종료 (화면 내리기)
@@ -797,7 +797,6 @@ export default function AdminPage() {
               <h3 className="section-title" style={{ marginBottom: 'var(--space-3)' }}>새 워드 클라우드 주제 만들기</h3>
               <form onSubmit={handleCreateWc} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                 <div className="form-group">
-                  <label className="label">워드 클라우드 질문 / 주제</label>
                   <input
                     className="input"
                     placeholder="예: 오늘 연수를 한 단어로 표현한다면?"
@@ -842,16 +841,16 @@ export default function AdminPage() {
                       .sort((a, b) => b.count - a.count);
 
                     return (
-                      <div key={w.id} className="admin-card" style={{ borderColor: w.isActive ? 'var(--color-primary-light)' : 'var(--color-border)', backgroundColor: w.isActive ? '#f8faff' : '#ffffff' }}>
-                        <div className="flex items-center justify-between flex-wrap gap-2" style={{ marginBottom: 'var(--space-3)' }}>
-                          <div className="flex items-center gap-2">
+                      <div key={w.id} className="admin-card admin-history-card" style={{ borderColor: w.isActive ? 'var(--color-primary-light)' : 'var(--color-border)', backgroundColor: w.isActive ? '#f8faff' : '#ffffff' }}>
+                        <div className="admin-history-card__top">
+                          <div className="admin-history-card__status">
                             <span className={`badge ${w.isActive ? 'badge-success' : 'badge-warning'}`}>
                               {w.isActive ? '🔴 진행 중 (화면 노출)' : '⚪ 마감됨'}
                             </span>
-                            <h4 className="font-bold text-lg">{w.question}</h4>
-                            <span className="text-xs text-muted">({totalRes}명 참여)</span>
+                            <span className="participant-count-badge">({totalRes}명 참여)</span>
                           </div>
-                          <div className="flex gap-2">
+                          <h4 className="admin-history-card__title">{w.question}</h4>
+                          <div className="admin-history-card__actions">
                             {w.isActive && (
                               <button className="btn btn-warning btn-sm" onClick={() => handleEndWc(w.id)}>
                                 ⏹ 작성 마감
