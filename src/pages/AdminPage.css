@@ -144,12 +144,15 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+  flex-wrap: wrap;
 }
 
 .admin-section-title {
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text);
+  white-space: nowrap !important;
+  word-break: normal !important;
 }
 
 .admin-card {
@@ -397,6 +400,14 @@
   }
   .admin-card {
     padding: 14px 12px;
+  }
+  .admin-section-header {
+    gap: 6px;
+  }
+  .admin-section-title {
+    font-size: 1.05rem !important;
+    white-space: nowrap !important;
+    word-break: normal !important;
   }
 }
 

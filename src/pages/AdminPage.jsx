@@ -1081,9 +1081,9 @@ export default function AdminPage() {
         {/* 채팅 참가 및 관리 탭 */}
         {activeTab === 'chat' && (
           <div className="admin-section animate-fade-in">
-            <div className="admin-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="admin-section-header">
               <div>
-                <h2 className="admin-section-title">💬 실시간 채팅 참가 및 관리</h2>
+                <h2 className="admin-section-title">💬 실시간 채팅 관리</h2>
                 <span className="text-xs text-muted">총 {messages.length}개 메시지</span>
               </div>
               {messages.length > 0 && (
