@@ -135,11 +135,27 @@
     gap: 12px;
   }
   .question-form-card {
-    padding: 12px;
-    gap: 8px;
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .question-input-row {
+    gap: 6px;
+    align-items: center;
+  }
+  .question-input-row .input {
+    min-width: 0;
+    flex: 1;
+    font-size: 0.84rem;
+    padding: 8px 10px;
+  }
+  .question-input-row .btn {
+    white-space: nowrap !important;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 0.82rem;
   }
   .question-item {
-    padding: 12px;
+    padding: 10px 12px;
     gap: 10px;
   }
 }

@@ -229,6 +229,15 @@ export default function RoomPage() {
 
   const displayTitle = (!roomInfo.title || roomInfo.title === '해피연수') ? '링크데이(토크콘서트)' : roomInfo.title.replace(/해피연수/g, '링크데이(토크콘서트)');
 
+  const onlineParticipantsCount = participants.filter((p) => {
+    if (p.isOnline === false || p.isKicked) return false;
+    if (p.lastSeen) {
+      const lastSeenTime = p.lastSeen.toDate ? p.lastSeen.toDate().getTime() : (typeof p.lastSeen === 'number' ? p.lastSeen : new Date(p.lastSeen).getTime());
+      if (Date.now() - lastSeenTime > 90000) return false;
+    }
+    return true;
+  }).length;
+
   return (
     <div className="room-layout">
       {/* 링크 팝업 */}
@@ -244,7 +253,7 @@ export default function RoomPage() {
             <h1 className="room-title">{displayTitle}</h1>
             <div className="header-author-tag">made by 남부교육지원청</div>
             <p className="room-subtitle text-xs text-muted">
-              <span className="online-dot" /> {participants.length}명 참가 중
+              <span className="online-dot" /> {onlineParticipantsCount}명 참가 중
             </p>
           </div>
         </div>

@@ -80,12 +80,12 @@ export default function QuestionPanel({ roomId, user }) {
       <form className="question-form-card" onSubmit={handleSubmit}>
         <div className="question-form-header">
           <span className="question-form-title">🙋‍♂️ 익명 질문 남기기</span>
-          <span className="text-xs text-muted">이름 없이 자유롭게 질문해보세요!</span>
+          <span className="text-xs text-muted hide-mobile">이름 없이 자유롭게 질문해보세요!</span>
         </div>
         <div className="question-input-row">
           <input
             className="input"
-            placeholder="발표 내용이나 실습 관련 궁금한 점을 입력하세요..."
+            placeholder="궁금한 점을 자유롭게 입력해보세요..."
             value={newQuestion}
             onChange={e => setNewQuestion(e.target.value)}
           />
