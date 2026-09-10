@@ -136,12 +136,15 @@
 }
 
 .room-tab-badge--new {
-  background: linear-gradient(135deg, #ec4899, #f43f5e);
+  background: #ef4444;
   color: #ffffff;
-  padding: 2px 6px;
-  font-size: 0.65rem;
-  box-shadow: 0 2px 6px rgba(236, 72, 153, 0.4);
-  animation: pulseGlow 1.8s infinite ease-in-out;
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25), 0 2px 8px rgba(239, 68, 68, 0.5);
+  animation: pulseGlow 1.4s infinite ease-in-out;
+  letter-spacing: 0.5px;
 }
 
 @keyframes bounceDot {
@@ -150,51 +153,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.08); opacity: 0.9; }
-}
-
-/* 새 소식 미니 플로팅 토스트 */
-.room-notification-toast {
-  position: fixed;
-  top: 75px;
-  right: 20px;
-  z-index: 990;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #ffffff;
-  padding: 0.65rem 1.1rem;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.15);
-  cursor: pointer;
-  max-width: 90vw;
-  transition: all var(--transition-fast);
-}
-
-.room-notification-toast:hover {
-  background: rgba(15, 23, 42, 0.98);
-  transform: translateY(-2px);
-  box-shadow: 0 14px 28px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.25);
-}
-
-.room-notification-toast__text {
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 320px;
-}
-
-.room-notification-toast__action {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #38bdf8;
-  flex-shrink: 0;
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25), 0 2px 8px rgba(239, 68, 68, 0.5); }
+  50% { transform: scale(1.1); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4), 0 4px 14px rgba(239, 68, 68, 0.7); }
 }
 
 /* 바디 */
@@ -312,16 +272,5 @@
   .room-sidebar--open {
     right: 0;
     box-shadow: var(--shadow-lg);
-  }
-  .room-notification-toast {
-    top: 56px;
-    right: 12px;
-    left: 12px;
-    justify-content: space-between;
-    padding: 0.5rem 0.85rem;
-  }
-  .room-notification-toast__text {
-    max-width: calc(100vw - 110px);
-    font-size: 0.8rem;
   }
 }
