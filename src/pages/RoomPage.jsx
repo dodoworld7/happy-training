@@ -249,7 +249,7 @@ export default function RoomPage() {
           </div>
         </div>
         <div className="room-header__right">
-          <span className="badge badge-success">🔴<span className="hide-mobile"> LIVE</span></span>
+          <span className="badge badge-success hide-mobile">🔴 LIVE</span>
           <button
             className="btn btn-ghost btn-sm hide-desktop"
             onClick={() => setShowSidebar(!showSidebar)}
