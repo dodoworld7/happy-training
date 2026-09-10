@@ -314,13 +314,51 @@
 .admin-chat-item__text {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
-  word-break: break-word;
+  word-break: break-all;
+  overflow-wrap: anywhere;
   line-height: 1.5;
 }
 
 @media (max-width: 768px) {
-  .admin-header { padding: var(--space-3) var(--space-4); }
-  .admin-tabs { padding: var(--space-2) var(--space-4); }
-  .admin-content { padding: var(--space-4); }
-  .admin-header__right { gap: var(--space-2); }
+  .admin-header {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .admin-header__left {
+    gap: 8px;
+    min-width: 0;
+  }
+  .admin-title {
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 170px;
+  }
+  .admin-tabs {
+    padding: 6px 8px;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-tab {
+    padding: 6px 10px;
+    font-size: 0.82rem;
+  }
+  .admin-content {
+    padding: 12px 8px;
+  }
+  .admin-card {
+    padding: 14px 12px;
+  }
+  .admin-header__right {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .admin-stat {
+    min-width: 54px;
+    padding: 4px 8px;
+  }
+  .admin-stat__num {
+    font-size: 1.2rem;
+  }
 }

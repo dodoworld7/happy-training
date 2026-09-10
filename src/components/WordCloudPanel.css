@@ -95,6 +95,9 @@
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.5px;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
   /* 고급 3D 엠보싱 입체감 */
   box-shadow: 
     inset 0 2px 4px rgba(255, 255, 255, 0.65),
@@ -162,7 +165,6 @@
   font-weight: 900;
   color: #ffffff;
   background: rgba(0, 0, 0, 0.28);
-  /* 오목한 3D 서클 칩 입체감 */
   box-shadow: 
     inset 0 2px 4px rgba(0, 0, 0, 0.45),
     inset 0 -1px 2px rgba(255, 255, 255, 0.25),
@@ -188,4 +190,31 @@
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 768px) {
+  .wordcloud-panel {
+    padding: 10px 8px;
+    gap: 12px;
+  }
+  .wordcloud-form-card {
+    padding: 12px;
+    gap: 8px;
+  }
+  .wordcloud-question-title {
+    font-size: 1.15rem;
+  }
+  .wordcloud-canvas-card {
+    padding: 12px 8px;
+    min-height: 280px;
+  }
+  .wordcloud-cloud-container {
+    padding: 8px;
+    gap: 8px 10px;
+  }
+  .wordcloud-tag {
+    padding: 6px 14px !important;
+    font-size: 0.92rem !important;
+    gap: 6px;
+  }
 }

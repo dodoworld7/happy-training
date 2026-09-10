@@ -42,19 +42,22 @@
   font-size: 32px;
 }
 .room-title {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 900;
   background: linear-gradient(135deg, #4c1d95 0%, #3730a3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.02em;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 .room-subtitle {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   margin-top: 2px;
+  white-space: nowrap;
 }
 .room-user-badge {
   display: flex;
@@ -64,19 +67,26 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
+  white-space: nowrap;
 }
 
 /* 서브 탭 (채팅 vs 질문함) */
 .room-subtabs {
   display: flex;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-6);
+  padding: var(--space-2) var(--space-4);
   background: #ffffff;
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+.room-subtabs::-webkit-scrollbar {
+  display: none;
 }
 .room-subtab {
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -86,6 +96,9 @@
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  word-break: keep-all;
+  flex-shrink: 0;
 }
 .room-subtab:hover {
   color: var(--color-primary);
@@ -121,7 +134,77 @@
 
 @media (max-width: 768px) {
   .room-header {
-    padding: var(--space-3) var(--space-4);
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  .room-header__left {
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+  .room-header__right {
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .room-logo {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .room-title {
+    font-size: 0.92rem;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    line-height: 1.2;
+    max-width: 100%;
+  }
+  .header-author-tag {
+    font-size: 0.62rem;
+    white-space: nowrap;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .room-subtitle {
+    font-size: 0.65rem;
+    white-space: nowrap;
+  }
+  .room-header__right .badge {
+    padding: 2px 5px;
+    font-size: 10px;
+  }
+  .room-header__right .btn-ghost {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  .room-user-badge {
+    padding: 1px 3px;
+    background: transparent;
+    border: none;
+  }
+  .room-subtabs {
+    padding: 4px 6px;
+    gap: 4px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .room-subtab {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+  }
+  .room-subtab--active {
+    background: rgba(124, 58, 237, 0.08);
   }
   .room-sidebar {
     position: fixed;

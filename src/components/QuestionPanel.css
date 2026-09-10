@@ -95,7 +95,8 @@
   font-size: var(--font-size-sm);
   color: var(--color-text);
   line-height: 1.5;
-  word-break: break-word;
+  word-break: break-all;
+  overflow-wrap: anywhere;
   font-weight: 500;
 }
 
@@ -113,6 +114,7 @@
   transition: all var(--transition-fast);
   color: var(--color-primary);
   min-width: 48px;
+  flex-shrink: 0;
 }
 .question-like-btn:hover {
   background: #ede9fe;
@@ -126,3 +128,18 @@
 }
 .question-like-btn__icon { font-size: 14px; }
 .question-like-btn__count { font-size: 12px; font-weight: 700; }
+
+@media (max-width: 768px) {
+  .question-panel {
+    padding: 10px 8px;
+    gap: 12px;
+  }
+  .question-form-card {
+    padding: 12px;
+    gap: 8px;
+  }
+  .question-item {
+    padding: 12px;
+    gap: 10px;
+  }
+}

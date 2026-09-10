@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import {
-  collection, query, orderBy, onSnapshot, doc, onSnapshot as onDocSnapshot, limit, updateDoc, deleteDoc
+  collection, query, orderBy, onSnapshot, doc, onSnapshot as onDocSnapshot, limit, updateDoc, deleteDoc, serverTimestamp
 } from 'firebase/firestore';
 import PinnedMessage from '../components/PinnedMessage';
 import ChatPanel from '../components/ChatPanel';
@@ -37,13 +37,43 @@ export default function RoomPage() {
     setUser(userData);
   }, [roomId, navigate]);
 
+  // 창 닫기 도우미 함수
+  const closeWindowOrNavigate = () => {
+    sessionStorage.clear();
+    try {
+      window.close();
+    } catch (e) {}
+    setTimeout(() => {
+      try {
+        window.location.href = 'about:blank';
+      } catch (e) {
+        navigate('/');
+      }
+    }, 300);
+  };
+
   // 방 정보 실시간 구독
   useEffect(() => {
     if (!roomId) return;
+    let initialLoad = true;
+    let lastResetTime = null;
     const unsub = onDocSnapshot(doc(db, 'rooms', roomId), (snap) => {
       if (snap.exists()) {
-        setRoomInfo({ id: snap.id, ...snap.data() });
+        const data = { id: snap.id, ...snap.data() };
+        setRoomInfo(data);
         setLoading(false);
+
+        // 방 전체 초기화 감지
+        if (data.resetAt) {
+          const resetTime = data.resetAt.toDate ? data.resetAt.toDate().getTime() : new Date(data.resetAt).getTime();
+          if (!initialLoad && lastResetTime !== null && resetTime > lastResetTime) {
+            alert('🚨 연수 방이 전체 초기화되어 화면이 종료됩니다.');
+            closeWindowOrNavigate();
+            return;
+          }
+          lastResetTime = resetTime;
+        }
+        initialLoad = false;
       }
     });
     return unsub;
@@ -102,57 +132,76 @@ export default function RoomPage() {
     return unsub;
   }, [roomId]);
 
-  // 온라인 상태 관리 (입장 시 온라인, 탭/창 종료 시 오프라인)
+  // 온라인 상태 및 하트비트 관리 (입장 시 온라인, 주기적 lastSeen, 탭/창 종료 시 오프라인)
   useEffect(() => {
     const stored = sessionStorage.getItem('happyUser');
     if (!stored || !roomId) return;
     const { sessionId } = JSON.parse(stored);
     const participantRef = doc(db, 'rooms', roomId, 'participants', sessionId);
 
-    // 입장 시 온라인 마킹
-    updateDoc(participantRef, { isOnline: true }).catch(console.error);
+    // 1. 입장 시 온라인 & 하트비트 갱신
+    updateDoc(participantRef, {
+      isOnline: true,
+      lastSeen: serverTimestamp()
+    }).catch(console.error);
 
-    const handleUnload = () => {
-      // 탭/창 종료 시 오프라인 마킹
+    // 2. 30초 주기 하트비트
+    const heartbeatTimer = setInterval(() => {
+      updateDoc(participantRef, {
+        isOnline: true,
+        lastSeen: serverTimestamp()
+      }).catch(() => {});
+    }, 30000);
+
+    // 3. 창/탭 종료 및 화면 비활성화 감지
+    const handleOff = () => {
       try {
-        if (navigator.sendBeacon) {
-          updateDoc(participantRef, { isOnline: false });
-        } else {
-          updateDoc(participantRef, { isOnline: false });
-        }
+        updateDoc(participantRef, { isOnline: false }).catch(() => {});
       } catch (e) {}
     };
 
-    window.addEventListener('beforeunload', handleUnload);
-    window.addEventListener('pagehide', handleUnload);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleOff();
+      } else if (document.visibilityState === 'visible') {
+        updateDoc(participantRef, {
+          isOnline: true,
+          lastSeen: serverTimestamp()
+        }).catch(() => {});
+      }
+    };
+
+    window.addEventListener('beforeunload', handleOff);
+    window.addEventListener('pagehide', handleOff);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-      window.removeEventListener('pagehide', handleUnload);
+      clearInterval(heartbeatTimer);
+      window.removeEventListener('beforeunload', handleOff);
+      window.removeEventListener('pagehide', handleOff);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       updateDoc(participantRef, { isOnline: false }).catch(() => {});
     };
   }, [roomId]);
 
-  // 본인 참가자 상태 실시간 구독 (퇴장 처리 감지용)
+  // 본인 참가자 상태 실시간 구독 (퇴장 처리 감지용 및 창 닫기)
   useEffect(() => {
     if (!roomId || !user?.sessionId) return;
     const myParticipantRef = doc(db, 'rooms', roomId, 'participants', user.sessionId);
     const unsub = onSnapshot(myParticipantRef, (snap) => {
       if (!snap.exists()) {
-        alert('ℹ️ 연수가 초기화되었거나 퇴장 처리되어 화면이 종료됩니다.');
-        sessionStorage.clear();
-        navigate('/');
+        alert('ℹ️ 연수가 초기화되었거나 접속이 종료되어 화면이 닫힙니다.');
+        closeWindowOrNavigate();
         return;
       }
       const data = snap.data();
       if (data.isKicked) {
-        alert('ℹ️ 운영자에 의해 퇴장 처리되었습니다.');
-        sessionStorage.clear();
-        navigate('/');
+        alert('ℹ️ 운영자에 의해 퇴장 처리되어 화면이 닫힙니다.');
+        closeWindowOrNavigate();
       }
     });
     return unsub;
-  }, [roomId, user, navigate]);
+  }, [roomId, user]);
 
   // 스스로 로그아웃 (퇴장)
   const handleLogout = async () => {
@@ -200,10 +249,11 @@ export default function RoomPage() {
           </div>
         </div>
         <div className="room-header__right">
-          <span className="badge badge-success">🔴 LIVE</span>
+          <span className="badge badge-success">🔴<span className="hide-mobile"> LIVE</span></span>
           <button
             className="btn btn-ghost btn-sm hide-desktop"
             onClick={() => setShowSidebar(!showSidebar)}
+            title="참가자 목록"
           >
             👥
           </button>
@@ -216,7 +266,7 @@ export default function RoomPage() {
             onClick={handleLogout}
             title="연수 방 퇴장"
           >
-            🚪 퇴장
+            🚪<span className="hide-mobile"> 퇴장</span>
           </button>
         </div>
       </header>

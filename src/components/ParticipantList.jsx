@@ -7,8 +7,17 @@ function formatTime(timestamp) {
 }
 
 export default function ParticipantList({ participants, currentUser }) {
-  // 현재 접속 중이고 퇴장당하지 않은 참가자만 표시
-  const activeParticipants = participants.filter(p => p.isOnline !== false && !p.isKicked);
+  // 현재 접속 중이고 퇴장당하지 않았으며 하트비트가 유지된 참가자만 표시
+  const checkIsOnline = (p) => {
+    if (p.isOnline === false || p.isKicked) return false;
+    if (p.lastSeen) {
+      const lastSeenTime = p.lastSeen.toDate ? p.lastSeen.toDate().getTime() : (typeof p.lastSeen === 'number' ? p.lastSeen : new Date(p.lastSeen).getTime());
+      if (Date.now() - lastSeenTime > 90000) return false;
+    }
+    return true;
+  };
+
+  const activeParticipants = participants.filter(checkIsOnline);
   const onlineCount = activeParticipants.length;
 
   return (

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import {
-  doc, setDoc, serverTimestamp, collection, query, where, getDocs
+  doc, setDoc, serverTimestamp, collection, query, where, getDocs, deleteDoc
 } from 'firebase/firestore';
 import './LoginPage.css';
 
@@ -70,19 +70,30 @@ export default function LoginPage() {
   // 별명(닉네임) 입력 후 입장
   const handleJoin = async (e) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
     setLoading(true);
     setError('');
     try {
       const pendingRoom = JSON.parse(sessionStorage.getItem('pendingRoom') || '{}');
       const { roomId } = pendingRoom;
-      const sessionId = name.trim() + '_' + Date.now();
 
-      // 참가자 기록
+      // 1. 기존 동일 닉네임의 참가자 문서가 존재하면 사전 정리 (중복 접속 방지)
+      const participantsRef = collection(db, 'rooms', roomId, 'participants');
+      const dupQuery = query(participantsRef, where('name', '==', trimmedName));
+      const dupSnap = await getDocs(dupQuery);
+      if (!dupSnap.empty) {
+        const deletePromises = dupSnap.docs.map(d => deleteDoc(doc(db, 'rooms', roomId, 'participants', d.id)));
+        await Promise.all(deletePromises);
+      }
+
+      // 2. 새 세션 등록
+      const sessionId = trimmedName + '_' + Date.now();
       await setDoc(doc(db, 'rooms', roomId, 'participants', sessionId), {
-        name: name.trim(),
+        name: trimmedName,
         org: '',
         joinedAt: serverTimestamp(),
+        lastSeen: serverTimestamp(),
         isOnline: true,
         sessionId,
       });
@@ -91,7 +102,7 @@ export default function LoginPage() {
       sessionStorage.setItem('happyUser', JSON.stringify({
         roomId,
         isAdmin: false,
-        name: name.trim(),
+        name: trimmedName,
         org: '',
         sessionId,
       }));

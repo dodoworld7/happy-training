@@ -355,13 +355,16 @@ export default function AdminPage() {
   const handleClearAllParticipants = async () => {
     if (!window.confirm('🚨 모든 참가자 접속 이력을 초기화하고 참가자들을 퇴장시키겠습니까?')) return;
     try {
+      // 방 문서에 resetAt 기록 (참가자 클라이언트 화면 닫기용)
+      await updateDoc(doc(db, 'rooms', roomId), { resetAt: serverTimestamp() });
+
       // 모든 참가자에게 퇴장 신호 전달 후 삭제
       const kickPromises = participants.map(p => updateDoc(doc(db, 'rooms', roomId, 'participants', p.id), { isKicked: true, isOnline: false }));
       await Promise.all(kickPromises);
 
       const deletePromises = participants.map(p => deleteDoc(doc(db, 'rooms', roomId, 'participants', p.id)));
       await Promise.all(deletePromises);
-      alert('🧹 참가자 목록이 초기화되었으며 접속 중인 참가자가 퇴장 처리되었습니다.');
+      alert('🧹 참가자 목록이 초기화되었으며 접속 중인 참가자가 퇴장 및 화면 종료 처리되었습니다.');
     } catch (err) {
       alert('초기화 오류: ' + err.message);
     }
@@ -421,13 +424,16 @@ export default function AdminPage() {
     if (!window.confirm(confirmMsg)) return;
 
     try {
-      // 1. 모든 접속 참가자에게 퇴장 처리 신호 전송
+      // 1. 방 문서 resetAt 및 공지 고정 해제
+      await updateDoc(doc(db, 'rooms', roomId), { pinnedMessage: '', resetAt: serverTimestamp() });
+
+      // 2. 모든 접속 참가자에게 퇴장 처리 신호 전송
       const kickPromises = participants.map(p => 
         updateDoc(doc(db, 'rooms', roomId, 'participants', p.id), { isKicked: true, isOnline: false })
       );
       await Promise.all(kickPromises);
 
-      // 2. 모든 서브 컬렉션 문서 일괄 삭제
+      // 3. 모든 서브 컬렉션 문서 일괄 삭제
       const pDeletes = participants.map(p => deleteDoc(doc(db, 'rooms', roomId, 'participants', p.id)));
       const mDeletes = messages.map(m => deleteDoc(doc(db, 'rooms', roomId, 'messages', m.id)));
       const polDeletes = polls.map(po => deleteDoc(doc(db, 'rooms', roomId, 'polls', po.id)));
@@ -439,10 +445,7 @@ export default function AdminPage() {
         ...pDeletes, ...mDeletes, ...polDeletes, ...wcDeletes, ...lDeletes, ...qDeletes
       ]);
 
-      // 3. 공지 고정 해제
-      await updateDoc(doc(db, 'rooms', roomId), { pinnedMessage: '' });
-
-      alert('🧹 해당 연수의 모든 기록이 초기화되었으며, 접속 중인 참가자가 모두 퇴장 처리되었습니다!');
+      alert('🧹 해당 연수의 모든 기록이 초기화되었으며, 접속 중인 참가자의 화면이 정상적으로 닫힙니다!');
     } catch (err) {
       alert('전체 초기화 오류: ' + err.message);
     }
@@ -521,8 +524,15 @@ export default function AdminPage() {
     );
   }
 
-  // 현재 접속 인원 및 유저 판단 (isOnline !== false && !isKicked)
-  const checkIsOnline = (p) => p.isOnline !== false && !p.isKicked;
+  // 현재 접속 인원 및 유저 판단 (isOnline !== false && !isKicked & lastSeen 하트비트 감지)
+  const checkIsOnline = (p) => {
+    if (p.isOnline === false || p.isKicked) return false;
+    if (p.lastSeen) {
+      const lastSeenTime = p.lastSeen.toDate ? p.lastSeen.toDate().getTime() : (typeof p.lastSeen === 'number' ? p.lastSeen : new Date(p.lastSeen).getTime());
+      if (Date.now() - lastSeenTime > 90000) return false;
+    }
+    return true;
+  };
   const onlineCount = participants.filter(p => checkIsOnline(p)).length;
 
   const displayTitle = (!roomInfo.title || roomInfo.title === '해피연수') ? '링크데이(토크콘서트) 관리 대시보드' : roomInfo.title.replace(/해피연수/g, '링크데이(토크콘서트)');

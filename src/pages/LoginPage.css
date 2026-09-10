@@ -231,3 +231,23 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
 }
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 24px 18px;
+    border-radius: var(--radius-xl);
+  }
+  .login-header {
+    margin-bottom: var(--space-5);
+  }
+  .login-logo {
+    width: 56px;
+    height: 56px;
+  }
+  .login-logo__icon {
+    font-size: 28px;
+  }
+  .login-title {
+    font-size: 1.6rem;
+  }
+}

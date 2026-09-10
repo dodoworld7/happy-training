@@ -96,7 +96,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  max-width: 70%;
+  max-width: 75%;
   position: relative;
 }
 .msg-row--me .msg-content {
@@ -128,7 +128,8 @@
   color: var(--color-text);
   font-size: var(--font-size-sm);
   line-height: 1.6;
-  word-break: break-word;
+  word-break: break-all;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
   box-shadow: var(--shadow-sm);
 }
@@ -217,6 +218,7 @@
   text-decoration: underline;
   text-underline-offset: 2px;
   word-break: break-all;
+  overflow-wrap: anywhere;
 }
 .chat-link:hover { color: #3730a3; }
 
@@ -258,4 +260,40 @@
   height: 44px;
   padding: 0 var(--space-5);
   flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .chat-messages {
+    padding: 10px 8px;
+    gap: 12px;
+  }
+  .msg-content {
+    max-width: 88%;
+  }
+  .msg-bubble {
+    padding: 8px 12px;
+    font-size: 0.88rem;
+  }
+  .chat-input-bar {
+    padding: 8px 10px;
+    gap: 6px;
+    align-items: center;
+  }
+  .chat-textarea {
+    padding: 8px 10px;
+    font-size: 0.86rem;
+    min-height: 38px;
+    max-height: 80px;
+  }
+  .chat-send-btn {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 0.82rem;
+    white-space: nowrap !important;
+    flex-shrink: 0;
+    word-break: keep-all;
+  }
+  .chat-links-bar {
+    padding: 6px 10px;
+  }
 }

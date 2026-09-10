@@ -183,7 +183,7 @@ export default function ChatPanel({ roomId, messages, links, user }) {
           ref={textareaRef}
           id="chat-input"
           className="chat-textarea"
-          placeholder="메시지를 입력하세요... (Enter 전송, Shift+Enter 줄바꿈)"
+          placeholder="메시지를 입력하세요..."
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={handleKeyDown}
