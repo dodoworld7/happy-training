@@ -1,14 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
 import './ChatPanel.css';
 
 const EMOJI_REACTIONS = ['👍', '🙌', '❓', '💡', '😊'];
 const LINK_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi;
-
-function isLinkMessage(text) {
-  return LINK_REGEX.test(text);
-}
 
 function formatTime(timestamp) {
   if (!timestamp) return '';
