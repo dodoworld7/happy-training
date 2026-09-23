@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import {
@@ -39,6 +39,9 @@ export default function RoomPage() {
   const lastMessageCountRef = useRef(0);
   const activeTabRef = useRef(activeTab);
 
+  // lastWcAtRef는 resetAt 감지 useEffect에서도 사용하므로 반드시 상단에 선언
+  const lastWcAtRef = useRef(null);
+
   useEffect(() => {
     activeTabRef.current = activeTab;
   }, [activeTab]);
@@ -77,8 +80,8 @@ export default function RoomPage() {
     setUser(userData);
   }, [roomId, navigate]);
 
-  // 창 닫기 도우미 함수
-  const closeWindowOrNavigate = () => {
+  // 창 닫기 도우미 함수 (useCallback으로 참조 안정화 → useEffect 의존성 경고 해결)
+  const closeWindowOrNavigate = useCallback(() => {
     sessionStorage.clear();
     try {
       window.close();
@@ -90,7 +93,7 @@ export default function RoomPage() {
         navigate('/');
       }
     }, 300);
-  };
+  }, [navigate]);
 
   // 방 정보 실시간 구독
   useEffect(() => {
@@ -114,7 +117,7 @@ export default function RoomPage() {
             setUnreadChatCount(0);
             setHasNewWordCloud(false);
             lastMessageCountRef.current = 0;
-            lastWcAtRef.current = null;
+            lastWcAtRef.current = null;  // ✅ 이제 상단에서 선언되어 안전
             lastNoticeKeyRef.current = '';
 
             alert('🚨 연수 방이 전체 초기화되어 화면이 종료됩니다.');
@@ -127,7 +130,7 @@ export default function RoomPage() {
       }
     });
     return unsub;
-  }, [roomId]);
+  }, [roomId, closeWindowOrNavigate]);
 
   // 메시지 실시간 구독
   useEffect(() => {
@@ -206,7 +209,7 @@ export default function RoomPage() {
   }, [roomInfo?.pinnedMessage, roomInfo?.pinnedAt]);
 
   // 1. 방 문서 기반 워드클라우드 신규 시작 즉시 감지 (탭 알림 배지)
-  const lastWcAtRef = useRef(null);
+  // lastWcAtRef는 함수 상단에서 이미 선언됨
   useEffect(() => {
     if (!roomInfo?.activeWordCloudTopic || !roomInfo?.activeWordCloudAt) {
       setHasNewWordCloud(false);
@@ -383,7 +386,7 @@ export default function RoomPage() {
       }
     });
     return unsub;
-  }, [roomId, user]);
+  }, [roomId, user, closeWindowOrNavigate]);
 
   // 스스로 로그아웃 (퇴장)
   const handleLogout = async () => {

@@ -97,6 +97,8 @@ const WordInputForm = memo(function WordInputForm({ activeWordCloudId, myRespons
 
 export default function WordCloudPanel({ roomId, user }) {
   const [activeWordCloud, setActiveWordCloud] = useState(null);
+  const [showBanner, setShowBanner] = useState(false);
+  const prevWcIdRef = useRef(null);
 
   // 활성 워드클라우드 주제 구독
   useEffect(() => {
@@ -112,9 +114,17 @@ export default function WordCloudPanel({ roomId, user }) {
           const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (b.createdAt || Date.now());
           return timeB - timeA;
         });
-        setActiveWordCloud(activeList[0]);
+        const latest = activeList[0];
+        // 새로운 워드클라우드가 시작되면 배너 표시
+        if (prevWcIdRef.current !== latest.id) {
+          setShowBanner(true);
+          prevWcIdRef.current = latest.id;
+        }
+        setActiveWordCloud(latest);
       } else {
         setActiveWordCloud(null);
+        setShowBanner(false);
+        prevWcIdRef.current = null;
       }
     }, (err) => {
       console.error('워드클라우드 구독 오류:', err);
@@ -163,13 +173,23 @@ export default function WordCloudPanel({ roomId, user }) {
 
   return (
     <div className="wordcloud-panel">
-      {/* 새 워드클라우드 시작 알림 배너 */}
-      <div className="wordcloud-new-banner animate-pop">
-        <span className="wordcloud-new-banner__icon">🔔</span>
-        <span className="wordcloud-new-banner__text">
-          관리자가 <strong>새로운 워드 클라우드 주제</strong>를 시작했습니다! 지금 자유롭게 단어를 남겨주세요.
-        </span>
-      </div>
+      {/* 새 워드클라우드 시작 알림 배너 (닫기 가능) */}
+      {showBanner && (
+        <div className="wordcloud-new-banner animate-pop">
+          <span className="wordcloud-new-banner__icon">🔔</span>
+          <span className="wordcloud-new-banner__text">
+            관리자가 <strong>새로운 워드 클라우드 주제</strong>를 시작했습니다! 지금 자유롭게 단어를 남겨주세요.
+          </span>
+          <button
+            className="wordcloud-banner-close-btn"
+            onClick={() => setShowBanner(false)}
+            title="배너 닫기"
+            aria-label="배너 닫기"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* 질문 및 제출 폼 카드 */}
       <div className="wordcloud-form-card">

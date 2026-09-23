@@ -292,6 +292,14 @@
     padding: 8px 12px;
     font-size: 0.88rem;
   }
+  /* 모바일에서는 hover 효과가 없으므로 리액션 버튼을 항상 표시 */
+  .msg-reaction-btn {
+    opacity: 0.5 !important;
+  }
+  .msg-row:hover .msg-reaction-btn,
+  .msg-reaction-btn:hover {
+    opacity: 0.8 !important;
+  }
   .reaction-picker {
     padding: 4px 6px;
     gap: 2px;

@@ -50,11 +50,37 @@
 }
 .wordcloud-new-banner__icon {
   font-size: 1.4rem;
+  flex-shrink: 0;
   animation: bounceDot 1.4s infinite ease-in-out;
+}
+.wordcloud-new-banner__text {
+  flex: 1;
 }
 .wordcloud-new-banner__text strong {
   color: #78350f;
   text-decoration: underline;
+}
+/* 배너 닫기 버튼 */
+.wordcloud-banner-close-btn {
+  background: rgba(146, 64, 14, 0.12);
+  border: none;
+  color: #92400e;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+  padding: 0;
+  line-height: 1;
+}
+.wordcloud-banner-close-btn:hover {
+  background: rgba(146, 64, 14, 0.22);
 }
 
 .wordcloud-form-card {
