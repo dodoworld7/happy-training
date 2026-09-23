@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { db } from '../firebase';
 import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import './WordCloudPanel.css';
@@ -14,10 +14,80 @@ const COLOR_PALETTES = [
   { bg: 'linear-gradient(135deg, #a855f7, #7c3aed)', color: '#ffffff' },
 ];
 
+// 모바일 한글 IME(자모 분리/글자 역순 입력) 방지를 위한 독립 입력 폼 컴포넌트
+const WordInputForm = memo(function WordInputForm({ activeWordCloudId, myResponseWord, user, roomId }) {
+  const inputRef = useRef(null);
+  const [hasInput, setHasInput] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // 한글 입력 중 실시간 변경 감지 (버튼 활성화 여부만 관리)
+  const handleInput = (e) => {
+    const val = e.target.value.trim();
+    const isNonEmpty = Boolean(val);
+    if (isNonEmpty !== hasInput) {
+      setHasInput(isNonEmpty);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const word = inputRef.current ? inputRef.current.value.trim() : '';
+    if (!word || !user?.sessionId || submitting) return;
+
+    setSubmitting(true);
+    try {
+      const wcRef = doc(db, 'rooms', roomId, 'wordclouds', activeWordCloudId);
+      await updateDoc(wcRef, {
+        [`responses.${user.sessionId}`]: {
+          word,
+          name: user.name || '참가자',
+          submittedAt: new Date().toISOString(),
+        }
+      });
+      if (inputRef.current) {
+        inputRef.current.value = '';
+      }
+      setHasInput(false);
+    } catch (err) {
+      alert('제출 오류: ' + err.message);
+    }
+    setSubmitting(false);
+  };
+
+  const placeholderText = myResponseWord
+    ? `내 제출 단어: "${myResponseWord}" (다시 입력 시 수정됨)`
+    : '한 마디 또는 단어로 자유롭게 입력하세요...';
+
+  return (
+    <form onSubmit={handleSubmit} className="wordcloud-input-row">
+      <input
+        ref={inputRef}
+        className="input"
+        placeholder={placeholderText}
+        defaultValue=""
+        onInput={handleInput}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck="false"
+      />
+      <button
+        className="btn btn-primary"
+        type="submit"
+        disabled={submitting || !hasInput}
+      >
+        {submitting ? (
+          <span className="spinner" style={{ width: 16, height: 16 }} />
+        ) : (
+          myResponseWord ? '수정 제출' : '단어 제출'
+        )}
+      </button>
+    </form>
+  );
+});
+
 export default function WordCloudPanel({ roomId, user }) {
   const [activeWordCloud, setActiveWordCloud] = useState(null);
-  const [inputWord, setInputWord] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   // 활성 워드클라우드 주제 구독
   useEffect(() => {
@@ -82,29 +152,6 @@ export default function WordCloudPanel({ roomId, user }) {
 
   const maxCount = wordList.length > 0 ? wordList[0].count : 1;
 
-  // 답변 제출 처리
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const word = inputWord.trim();
-    if (!word || !user?.sessionId || submitting) return;
-
-    setSubmitting(true);
-    try {
-      const wcRef = doc(db, 'rooms', roomId, 'wordclouds', activeWordCloud.id);
-      await updateDoc(wcRef, {
-        [`responses.${user.sessionId}`]: {
-          word,
-          name: user.name || '참가자',
-          submittedAt: new Date().toISOString(),
-        }
-      });
-      setInputWord('');
-    } catch (err) {
-      alert('제출 오류: ' + err.message);
-    }
-    setSubmitting(false);
-  };
-
   return (
     <div className="wordcloud-panel">
       {/* 새 워드클라우드 시작 알림 배너 */}
@@ -123,21 +170,13 @@ export default function WordCloudPanel({ roomId, user }) {
         </div>
         <h2 className="wordcloud-question-title">{activeWordCloud.question}</h2>
 
-        <form onSubmit={handleSubmit} className="wordcloud-input-row">
-          <input
-            className="input"
-            placeholder={myResponse ? `내 제출 단어: "${myResponse.word}" (다시 입력 시 수정됨)` : "한 마디 또는 단어로 자유롭게 입력하세요..."}
-            value={inputWord}
-            onChange={e => setInputWord(e.target.value)}
-          />
-          <button
-            className="btn btn-primary"
-            type="submit"
-            disabled={submitting || !inputWord.trim()}
-          >
-            {submitting ? <span className="spinner" style={{ width: 16, height: 16 }} /> : (myResponse ? '수정 제출' : '단어 제출')}
-          </button>
-        </form>
+        {/* 모바일 한글 입력 보호를 위해 분리된 입력 폼 */}
+        <WordInputForm
+          activeWordCloudId={activeWordCloud.id}
+          myResponseWord={myResponse?.word}
+          user={user}
+          roomId={roomId}
+        />
       </div>
 
       {/* 워드 클라우드 실시간 시각화 캔버스 */}
