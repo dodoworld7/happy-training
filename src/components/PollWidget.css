@@ -92,15 +92,54 @@
   flex-shrink: 0;
 }
 
+.poll-toggle-btn {
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  color: #1e40af;
+  border-radius: var(--radius-sm);
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.poll-toggle-btn:hover {
+  background: rgba(59, 130, 246, 0.16);
+}
+
+/* 접힌 상태 (슬림 모드) */
+.poll-widget-bar--collapsed {
+  padding: 6px 14px;
+  background: linear-gradient(90deg, #eff6ff 0%, #f0fdf4 100%);
+  border-bottom: 1.5px solid #bfdbfe;
+}
+.poll-widget-collapsed-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
 @media (max-width: 768px) {
   .poll-widget-bar {
-    padding: 8px 10px;
+    padding: 6px 10px;
+  }
+  .poll-widget-card {
+    gap: 6px;
+  }
+  .poll-widget-question {
+    font-size: 0.92rem;
   }
   .poll-options-list {
     grid-template-columns: 1fr;
-    gap: 6px;
+    gap: 5px;
   }
   .poll-option-btn {
-    padding: 8px 12px;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+  }
+  .poll-option-text {
+    font-size: 0.8rem;
   }
 }

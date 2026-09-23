@@ -93,21 +93,25 @@ function MessageItem({ msg, currentUser, roomId }) {
   );
 }
 
-export default function ChatPanel({ roomId, messages, links, user }) {
-  const [text, setText] = useState('');
-  const [sending, setSending] = useState(false);
-  const bottomRef = useRef(null);
+// 모바일 한글 입력 및 실시간 메시지 수신 리렌더링 간섭을 차단하는 독립 채팅 입력 컴포넌트
+const ChatInputBar = memo(function ChatInputBar({ roomId, user }) {
   const textareaRef = useRef(null);
+  const [hasText, setHasText] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  // 새 메시지 오면 스크롤 아래로
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const handleInput = (e) => {
+    const isNonEmpty = Boolean(e.target.value.trim());
+    if (isNonEmpty !== hasText) {
+      setHasText(isNonEmpty);
+    }
+  };
 
   const sendMessage = async (e) => {
-    e.preventDefault();
-    const trimmed = text.trim();
+    if (e) e.preventDefault();
+    const raw = textareaRef.current ? textareaRef.current.value : '';
+    const trimmed = raw.trim();
     if (!trimmed || sending) return;
+
     setSending(true);
     try {
       await addDoc(collection(db, 'rooms', roomId, 'messages'), {
@@ -118,7 +122,10 @@ export default function ChatPanel({ roomId, messages, links, user }) {
         pinned: false,
         reactions: {},
       });
-      setText('');
+      if (textareaRef.current) {
+        textareaRef.current.value = '';
+      }
+      setHasText(false);
     } catch (err) {
       console.error(err);
     }
@@ -126,11 +133,48 @@ export default function ChatPanel({ roomId, messages, links, user }) {
   };
 
   const handleKeyDown = (e) => {
+    // 모바일 및 한글 조합 중(isComposing) 엔터 키 중복 전송 방지
+    if (e.nativeEvent.isComposing) return;
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage(e);
+      sendMessage();
     }
   };
+
+  return (
+    <form className="chat-input-bar" onSubmit={sendMessage}>
+      <textarea
+        ref={textareaRef}
+        id="chat-input"
+        className="chat-textarea"
+        placeholder="메시지를 입력하세요..."
+        defaultValue=""
+        onInput={handleInput}
+        onKeyDown={handleKeyDown}
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck="false"
+        rows={1}
+      />
+      <button
+        id="chat-send-btn"
+        className="btn btn-primary chat-send-btn"
+        type="submit"
+        disabled={!hasText || sending}
+      >
+        {sending ? <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> : '전송 ↑'}
+      </button>
+    </form>
+  );
+});
+
+export default function ChatPanel({ roomId, messages, links, user }) {
+  const bottomRef = useRef(null);
+
+  // 새 메시지 오면 스크롤 아래로
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // 최근 링크 히스토리 (상위 5개)
   const recentLinks = links.slice(0, 5);
@@ -162,7 +206,7 @@ export default function ChatPanel({ roomId, messages, links, user }) {
       <div className="chat-messages scroll-y">
         {messages.length === 0 && (
           <div className="chat-empty">
-            <span style={{fontSize: '2rem'}}>💬</span>
+            <span style={{ fontSize: '2rem' }}>💬</span>
             <p>아직 채팅이 없습니다.<br />첫 메시지를 보내보세요!</p>
           </div>
         )}
@@ -178,26 +222,7 @@ export default function ChatPanel({ roomId, messages, links, user }) {
       </div>
 
       {/* 입력창 */}
-      <form className="chat-input-bar" onSubmit={sendMessage}>
-        <textarea
-          ref={textareaRef}
-          id="chat-input"
-          className="chat-textarea"
-          placeholder="메시지를 입력하세요..."
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          rows={1}
-        />
-        <button
-          id="chat-send-btn"
-          className="btn btn-primary chat-send-btn"
-          type="submit"
-          disabled={!text.trim() || sending}
-        >
-          {sending ? <span className="spinner" style={{width:16,height:16,borderWidth:2}} /> : '전송 ↑'}
-        </button>
-      </form>
+      <ChatInputBar roomId={roomId} user={user} />
     </div>
   );
 }

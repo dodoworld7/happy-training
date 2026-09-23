@@ -6,6 +6,7 @@ import './PollWidget.css';
 export default function PollWidget({ roomId, user }) {
   const [activePoll, setActivePoll] = useState(null);
   const [voting, setVoting] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // 활성 투표 구독
   useEffect(() => {
@@ -58,6 +59,30 @@ export default function PollWidget({ roomId, user }) {
     setVoting(false);
   };
 
+  // 접힌 상태 (슬림 모드)
+  if (isCollapsed) {
+    return (
+      <div className="poll-widget-bar poll-widget-bar--collapsed animate-fade-in">
+        <div className="poll-widget-collapsed-inner">
+          <div className="flex items-center gap-2" style={{ minWidth: 0, flex: 1 }}>
+            <span className="badge badge-warning" style={{ fontSize: '0.72rem', padding: '2px 6px' }}>📊 투표</span>
+            <span className="poll-collapsed-title text-sm" style={{ fontWeight: 700, color: '#1e3a8a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {activePoll.question}
+            </span>
+            <span className="text-xs text-muted hide-mobile">({totalVotes}명 참여)</span>
+          </div>
+          <button
+            className="btn btn-ghost btn-sm poll-toggle-btn"
+            onClick={() => setIsCollapsed(false)}
+            title="투표 위젯 펼치기"
+          >
+            {hasVoted ? '결과 보기 ▾' : '투표하기 ▾'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="poll-widget-bar animate-pop">
       <div className="poll-widget-card">
@@ -65,7 +90,17 @@ export default function PollWidget({ roomId, user }) {
           <div className="flex items-center gap-2">
             <span className="badge badge-warning">📊 실시간 투표 진행 중</span>
             <span className="text-xs text-muted">{totalVotes}명 참여</span>
+            {hasVoted && (
+              <span className="badge badge-success" style={{ fontSize: '0.72rem', padding: '2px 6px' }}>✓ 참여 완료</span>
+            )}
           </div>
+          <button
+            className="btn btn-ghost btn-sm poll-toggle-btn"
+            onClick={() => setIsCollapsed(true)}
+            title="투표 위젯 접기"
+          >
+            접기 ▴
+          </button>
         </div>
 
         <h3 className="poll-widget-question">{activePoll.question}</h3>
