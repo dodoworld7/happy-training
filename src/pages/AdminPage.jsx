@@ -59,7 +59,7 @@ export default function AdminPage() {
   const [creatingWc, setCreatingWc] = useState(false);
 
   // 링크 전송 폼
-  const [linkUrl, setLinkUrl] = useState('');
+  const [linkUrl, setLinkUrl] = useState('https://');
   const [linkTitle, setLinkTitle] = useState('');
   const [sendingLink, setSendingLink] = useState(false);
 
@@ -168,6 +168,11 @@ export default function AdminPage() {
 
   // 1. 참가자 채팅 감지 -> 채팅 관리 탭 알림 뱃지
   useEffect(() => {
+    if (messages.length === 0) {
+      setUnreadAdminChatCount(0);
+      lastMsgCountRef.current = 0;
+      return;
+    }
     if (lastMsgCountRef.current === null) {
       lastMsgCountRef.current = messages.length;
       return;
@@ -186,6 +191,11 @@ export default function AdminPage() {
 
   // 2. 참가자 익명 질문 등록 감지 -> 익명 질문 관리 탭 알림 뱃지
   useEffect(() => {
+    if (questions.length === 0) {
+      setHasNewQuestionAlert(false);
+      lastQuestionCountRef.current = 0;
+      return;
+    }
     if (lastQuestionCountRef.current === null) {
       lastQuestionCountRef.current = questions.length;
       return;
@@ -203,7 +213,12 @@ export default function AdminPage() {
   // 3. 워드클라우드 참가자 단어 제출 감지 -> 워드 클라우드 탭 알림 뱃지
   useEffect(() => {
     const activeWc = wordclouds.find(w => w.isActive);
-    const count = activeWc ? Object.keys(activeWc.responses || {}).length : 0;
+    if (!activeWc) {
+      setHasNewWcAlert(false);
+      lastWcResponseCountRef.current = 0;
+      return;
+    }
+    const count = Object.keys(activeWc.responses || {}).length;
     if (lastWcResponseCountRef.current === null) {
       lastWcResponseCountRef.current = count;
       return;
@@ -221,7 +236,12 @@ export default function AdminPage() {
   // 4. 실시간 투표 참가자 투표 감지 -> 투표 탭 알림 뱃지
   useEffect(() => {
     const activePoll = polls.find(p => p.isActive);
-    const voteTotal = activePoll ? (activePoll.options || []).reduce((acc, o) => acc + (o.votes || 0), 0) : 0;
+    if (!activePoll) {
+      setHasNewPollAlert(false);
+      lastPollVoteCountRef.current = 0;
+      return;
+    }
+    const voteTotal = (activePoll.options || []).reduce((acc, o) => acc + (o.votes || 0), 0);
     if (lastPollVoteCountRef.current === null) {
       lastPollVoteCountRef.current = voteTotal;
       return;
@@ -379,11 +399,32 @@ export default function AdminPage() {
     await deleteDoc(doc(db, 'rooms', roomId, 'questions', qId));
   };
 
+  // URL 입력 변경 핸들러 (항상 https:// 유지 및 전체 주소 붙여넣기 시 중복 방지)
+  const handleUrlChange = (e) => {
+    let val = e.target.value;
+    if (!val || val === 'http' || val === 'https' || val === 'https:' || val === 'https:/') {
+      setLinkUrl('https://');
+      return;
+    }
+    // https://가 붙어있는 상태에서 사용자가 전체 URL(https://... 또는 http://...)을 붙여넣었을 때 중복 제거
+    if (val.startsWith('https://https://')) {
+      val = val.replace(/^https:\/\/https:\/\//, 'https://');
+    } else if (val.startsWith('https://http://')) {
+      val = val.replace(/^https:\/\/http:\/\//, 'http://');
+    } else if (!val.startsWith('https://') && !val.startsWith('http://')) {
+      val = 'https://' + val.replace(/^https?:\/?\/?/, '');
+    }
+    setLinkUrl(val);
+  };
+
   // 링크 전송
   const handleSendLink = async (e) => {
     e.preventDefault();
     let rawUrl = linkUrl.trim();
-    if (!rawUrl) return;
+    if (!rawUrl || rawUrl === 'https://' || rawUrl === 'http://') {
+      alert('전송할 URL 주소를 입력해 주세요.');
+      return;
+    }
 
     // http:// 또는 https:// 가 없는 경우 자동으로 https:// 붙여주기
     if (!/^https?:\/\//i.test(rawUrl)) {
@@ -408,7 +449,7 @@ export default function AdminPage() {
         reactions: {},
         isSystem: true,
       });
-      setLinkUrl('');
+      setLinkUrl('https://');
       setLinkTitle('');
       alert('✅ 모든 참가자에게 링크가 전송되었습니다!');
     } catch (err) {
@@ -440,7 +481,7 @@ export default function AdminPage() {
 
   // 공지 핀 해제
   const handleClearPin = async () => {
-    await updateDoc(doc(db, 'rooms', roomId), { pinnedMessage: '' });
+    await updateDoc(doc(db, 'rooms', roomId), { pinnedMessage: '', pinnedAt: null });
     setPinText('');
   };
 
@@ -461,6 +502,8 @@ export default function AdminPage() {
     try {
       const deletePromises = messages.map(m => deleteDoc(doc(db, 'rooms', roomId, 'messages', m.id)));
       await Promise.all(deletePromises);
+      setUnreadAdminChatCount(0);
+      lastMsgCountRef.current = 0;
       alert('🧹 모든 채팅 메시지가 깨끗하게 지워졌습니다.');
     } catch (err) {
       alert('전체 지우기 오류: ' + err.message);
@@ -492,6 +535,8 @@ export default function AdminPage() {
     try {
       const deletePromises = polls.map(p => deleteDoc(doc(db, 'rooms', roomId, 'polls', p.id)));
       await Promise.all(deletePromises);
+      setHasNewPollAlert(false);
+      lastPollVoteCountRef.current = 0;
       alert('🧹 모든 투표 이력이 삭제되었습니다.');
     } catch (err) {
       alert('삭제 오류: ' + err.message);
@@ -507,8 +552,10 @@ export default function AdminPage() {
       await updateDoc(doc(db, 'rooms', roomId), {
         activeWordCloudId: null,
         activeWordCloudTopic: '',
-        activeWordCloudAt: serverTimestamp(),
+        activeWordCloudAt: null,
       });
+      setHasNewWcAlert(false);
+      lastWcResponseCountRef.current = 0;
       alert('🧹 모든 워드 클라우드가 삭제되었습니다.');
     } catch (err) {
       alert('삭제 오류: ' + err.message);
@@ -533,6 +580,8 @@ export default function AdminPage() {
     try {
       const deletePromises = questions.map(q => deleteDoc(doc(db, 'rooms', roomId, 'questions', q.id)));
       await Promise.all(deletePromises);
+      setHasNewQuestionAlert(false);
+      lastQuestionCountRef.current = 0;
       alert('🧹 모든 질문이 삭제되었습니다.');
     } catch (err) {
       alert('삭제 오류: ' + err.message);
@@ -545,16 +594,34 @@ export default function AdminPage() {
     if (!window.confirm(confirmMsg)) return;
 
     try {
-      // 1. 방 문서 resetAt 및 공지 고정 해제
-      await updateDoc(doc(db, 'rooms', roomId), { pinnedMessage: '', resetAt: serverTimestamp() });
+      // 1. 방 문서의 공지, 워드클라우드 상태, 리셋 시각 완벽 초기화 (참가자 화면 알림 트리거 방지)
+      await updateDoc(doc(db, 'rooms', roomId), {
+        pinnedMessage: '',
+        pinnedAt: null,
+        activeWordCloudId: null,
+        activeWordCloudTopic: '',
+        activeWordCloudAt: null,
+        resetAt: serverTimestamp(),
+      });
 
-      // 2. 모든 접속 참가자에게 퇴장 처리 신호 전송
+      // 2. 관리자 화면의 알림 뱃지 및 카운트 즉시 초기화
+      setUnreadAdminChatCount(0);
+      setHasNewQuestionAlert(false);
+      setHasNewWcAlert(false);
+      setHasNewPollAlert(false);
+      setPinText('');
+      lastMsgCountRef.current = 0;
+      lastQuestionCountRef.current = 0;
+      lastWcResponseCountRef.current = 0;
+      lastPollVoteCountRef.current = 0;
+
+      // 3. 모든 접속 참가자에게 퇴장 처리 신호 전송
       const kickPromises = participants.map(p => 
         updateDoc(doc(db, 'rooms', roomId, 'participants', p.id), { isKicked: true, isOnline: false })
       );
       await Promise.all(kickPromises);
 
-      // 3. 모든 서브 컬렉션 문서 일괄 삭제
+      // 4. 모든 서브 컬렉션 문서 일괄 삭제
       const pDeletes = participants.map(p => deleteDoc(doc(db, 'rooms', roomId, 'participants', p.id)));
       const mDeletes = messages.map(m => deleteDoc(doc(db, 'rooms', roomId, 'messages', m.id)));
       const polDeletes = polls.map(po => deleteDoc(doc(db, 'rooms', roomId, 'polls', po.id)));
@@ -566,7 +633,7 @@ export default function AdminPage() {
         ...pDeletes, ...mDeletes, ...polDeletes, ...wcDeletes, ...lDeletes, ...qDeletes
       ]);
 
-      alert('🧹 해당 연수의 모든 기록이 초기화되었으며, 접속 중인 참가자의 화면이 정상적으로 닫힙니다!');
+      alert('🧹 해당 연수의 모든 기록과 알림이 깨끗하게 초기화되었으며, 접속 중인 참가자의 화면이 정상적으로 닫힙니다!');
     } catch (err) {
       alert('전체 초기화 오류: ' + err.message);
     }
@@ -1119,7 +1186,11 @@ export default function AdminPage() {
                     type="url"
                     placeholder="https://"
                     value={linkUrl}
-                    onChange={e => setLinkUrl(e.target.value)}
+                    onChange={handleUrlChange}
+                    onFocus={e => {
+                      const len = e.target.value.length;
+                      e.target.setSelectionRange(len, len);
+                    }}
                     required
                   />
                 </div>
@@ -1127,7 +1198,7 @@ export default function AdminPage() {
                   id="link-send-btn"
                   className="btn btn-primary"
                   type="submit"
-                  disabled={sendingLink || !linkUrl.trim()}
+                  disabled={sendingLink || !linkUrl.trim() || linkUrl.trim() === 'https://' || linkUrl.trim() === 'http://'}
                 >
                   {sendingLink ? <span className="spinner" style={{width:16,height:16,borderWidth:2}} /> : '📤 전체 참가자에게 전송'}
                 </button>

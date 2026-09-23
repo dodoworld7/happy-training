@@ -83,6 +83,16 @@ export default function RoomPage() {
         if (data.resetAt) {
           const resetTime = data.resetAt.toDate ? data.resetAt.toDate().getTime() : new Date(data.resetAt).getTime();
           if (!initialLoad && lastResetTime !== null && resetTime > lastResetTime) {
+            // 모든 팝업 및 알림 뱃지 즉시 닫기 & 초기화
+            setShowNoticePopup(false);
+            setNoticeModalMessage('');
+            setLatestLink(null);
+            setUnreadChatCount(0);
+            setHasNewWordCloud(false);
+            lastMessageCountRef.current = 0;
+            lastWcAtRef.current = null;
+            lastNoticeKeyRef.current = '';
+
             alert('🚨 연수 방이 전체 초기화되어 화면이 종료됩니다.');
             closeWindowOrNavigate();
             return;
@@ -143,6 +153,9 @@ export default function RoomPage() {
         if (isNaN(diff) || Math.abs(diff) < 60000) {
           setLatestLink(newest);
         }
+      } else {
+        // 링크 목록이 비워지면 팝업 닫기
+        setLatestLink(null);
       }
     });
     return unsub;
@@ -152,6 +165,8 @@ export default function RoomPage() {
   useEffect(() => {
     if (!roomInfo?.pinnedMessage) {
       setShowNoticePopup(false);
+      setNoticeModalMessage('');
+      lastNoticeKeyRef.current = '';
       return;
     }
     const pinnedTime = roomInfo.pinnedAt?.toDate
@@ -170,7 +185,8 @@ export default function RoomPage() {
   const lastWcAtRef = useRef(null);
   useEffect(() => {
     if (!roomInfo?.activeWordCloudTopic || !roomInfo?.activeWordCloudAt) {
-      if (!roomInfo?.activeWordCloudTopic) setHasNewWordCloud(false);
+      setHasNewWordCloud(false);
+      lastWcAtRef.current = null;
       return;
     }
     const wcTime = roomInfo.activeWordCloudAt?.toDate
@@ -229,7 +245,11 @@ export default function RoomPage() {
 
   // 3. 채팅 메시지 감지 -> 실시간 채팅 옆 대화 개수 뱃지 증가 (화면 오른쪽 토스트 없음)
   useEffect(() => {
-    if (messages.length === 0) return;
+    if (messages.length === 0) {
+      setUnreadChatCount(0);
+      lastMessageCountRef.current = 0;
+      return;
+    }
     if (lastMessageCountRef.current === 0) {
       lastMessageCountRef.current = messages.length;
       return;
@@ -318,12 +338,22 @@ export default function RoomPage() {
     const myParticipantRef = doc(db, 'rooms', roomId, 'participants', user.sessionId);
     const unsub = onSnapshot(myParticipantRef, (snap) => {
       if (!snap.exists()) {
+        setShowNoticePopup(false);
+        setNoticeModalMessage('');
+        setLatestLink(null);
+        setUnreadChatCount(0);
+        setHasNewWordCloud(false);
         alert('ℹ️ 연수가 초기화되었거나 접속이 종료되어 화면이 닫힙니다.');
         closeWindowOrNavigate();
         return;
       }
       const data = snap.data();
       if (data.isKicked) {
+        setShowNoticePopup(false);
+        setNoticeModalMessage('');
+        setLatestLink(null);
+        setUnreadChatCount(0);
+        setHasNewWordCloud(false);
         alert('ℹ️ 운영자에 의해 퇴장 처리되어 화면이 닫힙니다.');
         closeWindowOrNavigate();
       }
