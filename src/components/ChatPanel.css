@@ -198,8 +198,13 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-2);
-  z-index: 10;
+  z-index: 25;
   box-shadow: var(--shadow-md);
+}
+/* 내가 쓴 글(우측 정렬)일 때 리액션 팝업을 화면 안쪽(왼쪽)으로 정렬 */
+.reaction-picker--me {
+  left: auto !important;
+  right: 0 !important;
 }
 .reaction-picker__btn {
   background: none;
@@ -222,18 +227,18 @@
 }
 .chat-link:hover { color: #3730a3; }
 
-/* 입력창 */
+/* 입력창 (모든 화면 요소보다 가장 앞쪽 최상단에 확실히 표시) */
 .chat-input-bar {
   display: flex;
   align-items: flex-end;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
-  background: #ffffff;
-  border-top: 1px solid var(--color-border);
+  background: #ffffff !important;
+  border-top: 1.5px solid var(--color-border);
   flex-shrink: 0;
-  box-shadow: 0 -1px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
   position: relative;
-  z-index: 10;
+  z-index: 100;
 }
 .chat-textarea {
   flex: 1;
@@ -287,24 +292,40 @@
     padding: 8px 12px;
     font-size: 0.88rem;
   }
+  .reaction-picker {
+    padding: 4px 6px;
+    gap: 2px;
+    z-index: 35;
+  }
+  .reaction-picker__btn {
+    font-size: 18px;
+    padding: 3px 5px;
+  }
+  .reaction-picker--me {
+    left: auto !important;
+    right: 0 !important;
+    max-width: calc(100vw - 36px);
+  }
   .chat-input-bar {
-    padding: 8px 10px;
+    padding: 8px 10px 10px 10px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
     gap: 6px;
     align-items: center;
     position: relative;
-    z-index: 20;
+    z-index: 100;
     flex-shrink: 0;
-    background: #ffffff;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    background: #ffffff !important;
+    border-top: 1.5px solid #e2e8f0;
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
   }
   .chat-textarea {
     padding: 8px 10px;
     font-size: 0.95rem; /* 모바일 브라우저 포커스 시 텍스트 깨짐 및 왜곡 방지 */
-    min-height: 38px;
+    min-height: 40px;
     max-height: 75px;
   }
   .chat-send-btn {
-    height: 38px;
+    height: 40px;
     padding: 0 14px;
     font-size: 0.84rem;
     font-weight: 700;

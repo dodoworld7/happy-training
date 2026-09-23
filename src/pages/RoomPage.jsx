@@ -553,8 +553,8 @@ export default function RoomPage() {
         )}
       </div>
 
-      {/* 푸터 서명 */}
-      <footer className="room-footer" style={{ textAlign: 'center', padding: '1rem 0 1.5rem 0', color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.85rem', fontWeight: '500' }}>
+      {/* 푸터 서명 (모바일에서는 채팅 입력창 가림 방지를 위해 데스크톱에서만 노출) */}
+      <footer className="room-footer hide-mobile" style={{ textAlign: 'center', padding: '1rem 0 1.5rem 0', color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.85rem', fontWeight: '500' }}>
         made by 남부교육지원청
       </footer>
     </div>

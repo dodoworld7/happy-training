@@ -74,9 +74,9 @@ function MessageItem({ msg, currentUser, roomId }) {
           </div>
         )}
         <span className="msg-time">{formatTime(msg.timestamp)}</span>
-        {/* 리액션 선택 */}
+        {/* 리액션 선택 (내 글일 경우 화면 안쪽으로 배치) */}
         {showReactions && (
-          <div className="reaction-picker animate-pop">
+          <div className={`reaction-picker animate-pop ${isMe ? 'reaction-picker--me' : ''}`}>
             {EMOJI_REACTIONS.map(e => (
               <button key={e} className="reaction-picker__btn" onClick={() => handleReaction(e)}>
                 {e}
