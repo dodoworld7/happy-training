@@ -137,6 +137,15 @@ const ChatInputBar = memo(function ChatInputBar({ roomId, user }) {
     }
   };
 
+  const handleFocus = () => {
+    // 가상 키보드가 올라올 때 입력창이 키보드 바로 위에 보이도록 정렬
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 150);
+  };
+
   return (
     <form className="chat-input-bar" onSubmit={sendMessage}>
       <textarea
@@ -146,6 +155,7 @@ const ChatInputBar = memo(function ChatInputBar({ roomId, user }) {
         placeholder="메시지를 입력하세요..."
         defaultValue=""
         onInput={handleInput}
+        onFocus={handleFocus}
         onKeyDown={handleKeyDown}
         autoComplete="off"
         autoCorrect="off"

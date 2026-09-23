@@ -47,6 +47,14 @@ const QuestionInputForm = memo(function QuestionInputForm({ roomId }) {
     setSubmitting(false);
   };
 
+  const handleFocus = () => {
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+  };
+
   return (
     <form className="question-form-card" onSubmit={handleSubmit}>
       <div className="question-form-header">
@@ -60,6 +68,7 @@ const QuestionInputForm = memo(function QuestionInputForm({ roomId }) {
           placeholder="궁금한 점을 자유롭게 입력해보세요..."
           defaultValue=""
           onInput={handleInput}
+          onFocus={handleFocus}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"

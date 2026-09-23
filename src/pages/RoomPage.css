@@ -16,8 +16,11 @@
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
+  height: var(--visual-height, 100dvh);
+  max-height: var(--visual-height, 100dvh);
   overflow: hidden;
   background: var(--color-bg);
+  position: relative;
 }
 
 /* 헤더 */

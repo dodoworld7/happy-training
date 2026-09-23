@@ -43,6 +43,30 @@ export default function RoomPage() {
     activeTabRef.current = activeTab;
   }, [activeTab]);
 
+  // 모바일 가상 키보드 팝업 시 전체 레이아웃 높이를 키보드 바로 위에 완벽 동기화
+  useEffect(() => {
+    const handleViewportChange = () => {
+      if (window.visualViewport) {
+        const height = window.visualViewport.height;
+        document.documentElement.style.setProperty('--visual-height', `${height}px`);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener('scroll', handleViewportChange);
+      handleViewportChange();
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener('scroll', handleViewportChange);
+      }
+      document.documentElement.style.removeProperty('--visual-height');
+    };
+  }, []);
+
   // 세션 확인
   useEffect(() => {
     const stored = sessionStorage.getItem('happyUser');

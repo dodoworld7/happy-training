@@ -54,6 +54,14 @@ const WordInputForm = memo(function WordInputForm({ activeWordCloudId, myRespons
     setSubmitting(false);
   };
 
+  const handleFocus = () => {
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+  };
+
   const placeholderText = myResponseWord
     ? `내 제출 단어: "${myResponseWord}" (다시 입력 시 수정됨)`
     : '한 마디 또는 단어로 자유롭게 입력하세요...';
@@ -66,6 +74,7 @@ const WordInputForm = memo(function WordInputForm({ activeWordCloudId, myRespons
         placeholder={placeholderText}
         defaultValue=""
         onInput={handleInput}
+        onFocus={handleFocus}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
